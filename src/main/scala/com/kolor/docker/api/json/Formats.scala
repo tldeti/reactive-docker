@@ -240,8 +240,8 @@ object Formats {
 
   implicit val containerNetworkConfigFmt = Format(
     (
-      ((__ \ "IpAddress").readNullable[String] or (__ \ "IPAddress").readNullable[String]) and
-      ((__ \ "IpPrefixLen").readNullable[Int] or (__ \ "IPPrefixLen").readNullable[Int]) and
+      ((__ \ "IPAddress").readNullable[String] or (__ \ "IPAddress").readNullable[String]) and
+      ((__ \ "IPPrefixLen").readNullable[Int] or (__ \ "IPPrefixLen").readNullable[Int]) and
       (__ \ "Gateway").readNullable[String] and
       (__ \ "Bridge").readNullable[String] and
       (__ \ "PortMapping").readNullable[Seq[String]] and
