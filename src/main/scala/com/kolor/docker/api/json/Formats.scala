@@ -245,7 +245,7 @@ object Formats {
       (__ \ "Gateway").readNullable[String] and
       (__ \ "Bridge").readNullable[String] and
       (__ \ "PortMapping").readNullable[Seq[String]] and
-      (__ \ "Ports").readNullable[Map[String, DockerPortBinding]].map(_.map(_.values.toSeq)))(ContainerNetworkConfiguration.apply _),
+        (__ \ "Ports").readNullable[Map[String, Option[DockerPortBinding]]].map(_.map(_.values.flatten.toSeq)))(ContainerNetworkConfiguration.apply _),
     (
       (__ \ "IPAddress").writeNullable[String] and
       (__ \ "IPPrefixLen").writeNullable[Int] and
