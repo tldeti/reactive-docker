@@ -1,5 +1,7 @@
 package com.kolor.docker.api.json
 
+import com.kolor.docker.api.entities.VolumnFrom.RoERw
+import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import com.kolor.docker.api.entities._
 import play.api.libs.functional.syntax._
@@ -83,7 +85,16 @@ object Formats {
   }
 
   // Json writer to serialize DockerVolumes into string array 
-  implicit val dockerVolumeFmt = Json.format[DockerVolume]
+  val dockerVolumeReads = Json.reads[DockerVolume]
+
+  implicit val dockerVolumnWrites = Json.writes[DockerVolume]
+
+  implicit val dockerVolumnReader = Reads[DockerVolume]{js => js match {
+    case JsString(s) => DockerVolume.fromString(s).map(JsSuccess(_)).getOrElse(JsError(ValidationError(s"not a valid Docker volumnStr")))
+    case x:JsObject => Json.fromJson[DockerVolume](x)(dockerVolumeReads)
+    case _ => JsError(ValidationError("error.expected.jsstringorjsobject"))
+  }
+  }
 
     
   val dateTimeToIsoWrite: Writes[org.joda.time.DateTime] = new Writes[org.joda.time.DateTime] {
@@ -240,8 +251,8 @@ object Formats {
 
   implicit val containerNetworkConfigFmt = Format(
     (
-      ((__ \ "IpAddress").readNullable[String] or (__ \ "IPAddress").readNullable[String]) and
-      ((__ \ "IpPrefixLen").readNullable[Int] or (__ \ "IPPrefixLen").readNullable[Int]) and
+      ((__ \ "IPAddress").readNullable[String] or (__ \ "IPAddress").readNullable[String]) and
+      ((__ \ "IPPrefixLen").readNullable[Int] or (__ \ "IPPrefixLen").readNullable[Int]) and
       (__ \ "Gateway").readNullable[String] and
       (__ \ "Bridge").readNullable[String] and
       (__ \ "PortMapping").readNullable[Seq[String]] and
@@ -266,6 +277,18 @@ object Formats {
       (__ \ "Email").write[String] and
       (__ \ "ServerAddress").write[String])(unlift(DockerAuth.unapply)))
 
+  implicit val containerNameFmt = Json.format[ContainerName]
+
+  implicit object volumnFromWrites extends Writes[VolumnFrom] {
+    def writes(d: VolumnFrom): JsValue = JsString(d.toString)
+  }
+
+  implicit val volumnFromReader = Reads[VolumnFrom](js => js match {
+    case JsString(s) =>
+      VolumnFrom(s).map(JsSuccess(_)).getOrElse(JsError(ValidationError(s"not a valid volumnFrom str: $s")))
+    case _ => JsError(ValidationError("error.expected.jsstring"))
+  })
+
   implicit val containerHostConfigFmt = Format(
     (
       (__ \ "Privileged").read[Boolean] and
@@ -278,6 +301,7 @@ object Formats {
       (__ \ "ContainerIdFile").readNullable[String] and
       (__ \ "LxcConf").readNullable[Map[String, String]] and
       (__ \ "NetworkMode").read[ContainerNetworkingMode](ContainerNetworkingModeFormat).orElse(Reads.pure(ContainerNetworkingMode.Default)) and
+        (__ \ "VolumesFrom").readNullable[Seq[VolumnFrom]].orElse(Reads.pure(None)) and
       (__ \ "RestartPolicy").readNullable[ContainerRestartPolicy](containerRestartPolicyFmt) and
       (__ \ "PortBindings").readNullable[Map[String, JsObject]].map { opt =>
         val regex = """^(\d+)/(tcp|udp)$""".r
@@ -295,6 +319,7 @@ object Formats {
       (__ \ "ContainerIdFile").writeNullable[String] and
       (__ \ "LxcConf").writeNullable[Map[String, String]] and
       (__ \ "NetworkMode").write[ContainerNetworkingMode](ContainerNetworkingModeFormat) and
+        (__ \ "VolumesFrom").writeNullable[Seq[VolumnFrom]] and
       (__ \ "RestartPolicy").writeNullable[ContainerRestartPolicy](containerRestartPolicyFmt) and      
       (__ \ "PortBindings").writeNullable[Map[String, DockerPortBinding]](hostConfigPortBindingWrite) and
       (__ \ "Links").writeNullable[Seq[String]] and
@@ -319,7 +344,6 @@ object Formats {
       (__ \ "Env").readNullable[Seq[String]] and
       (__ \ "Dns").readNullable[String] and
       (__ \ "Volumes").readNullable[Map[String, DockerVolume]] and
-      (__ \ "VolumesFrom").readNullable[ContainerId].orElse(Reads.pure(None)) and
       (__ \ "WorkingDir").readNullable[String] and
       (__ \ "ExposedPorts").readNullable[Map[String, JsObject]].map { opt =>
         val regex = """^(\d+)/(tcp|udp)$""".r
@@ -347,7 +371,6 @@ object Formats {
       (__ \ "Env").writeNullable[Seq[String]] and
       (__ \ "Dns").writeNullable[String] and
       (__ \ "Volumes").writeNullable[Map[String, DockerVolume]] and
-      (__ \ "VolumesFrom").writeNullable[ContainerId] and
       (__ \ "WorkingDir").writeNullable[String] and
       (__ \ "ExposedPorts").writeNullable[Map[String, DockerPortBinding]](containerConfigPortBindingWrite) and
       (__ \ "Entrypoint").writeNullable[Seq[String]] and

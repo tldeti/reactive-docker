@@ -1,5 +1,6 @@
 package com.kolor.docker.api.json
 
+import play.api.data.validation.ValidationError
 import play.api.libs.json._
 import com.kolor.docker.api.entities._
 import play.api.libs.functional.syntax._
@@ -52,6 +53,17 @@ object FormatsV112 {
   // Json writer to serialize DockerVolumes into string array 
   implicit val dockerVolumeFmt = Json.format[DockerVolume]
 
+  implicit val containerNameFmt = Json.format[ContainerName]
+
+  implicit object volumnFromWrites extends Writes[VolumnFrom] {
+    def writes(d: VolumnFrom): JsValue = JsString(d.toString)
+  }
+
+  implicit val volumnFromReader = Reads[VolumnFrom](js => js match {
+    case JsString(s) =>
+      VolumnFrom(s).map(JsSuccess(_)).getOrElse(JsError(ValidationError(s"not a valid volumnFrom str: $s")))
+    case _ => JsError(ValidationError("error.expected.jsstring"))
+  })
     
   val dateTimeToIsoWrite: Writes[org.joda.time.DateTime] = new Writes[org.joda.time.DateTime] {
     def writes(dt: org.joda.time.DateTime): JsValue = JsString(org.joda.time.format.ISODateTimeFormat.dateTime().print(dt))
@@ -239,6 +251,7 @@ object FormatsV112 {
       (__ \ "ContainerIdFile").readNullable[String] and
       (__ \ "LxcConf").readNullable[Map[String, String]] and
       (__ \ "NetworkMode").read[ContainerNetworkingMode](Formats.ContainerNetworkingModeFormat).orElse(Reads.pure(ContainerNetworkingMode.Default)) and
+        (__ \ "VolumesFrom").readNullable[Seq[VolumnFrom]].orElse(Reads.pure(None)) and
       (__ \ "RestartPolicy").readNullable[ContainerRestartPolicy](Formats.containerRestartPolicyFmt) and
       (__ \ "PortBindings").readNullable[Map[String, JsObject]].map { opt =>
         val regex = """^(\d+)/(tcp|udp)$""".r
@@ -257,6 +270,7 @@ object FormatsV112 {
       (__ \ "ContainerIdFile").writeNullable[String] and
       (__ \ "LxcConf").writeNullable[Map[String, String]] and
       (__ \ "NetworkMode").write[ContainerNetworkingMode](Formats.ContainerNetworkingModeFormat) and
+        (__ \ "VolumesFrom").writeNullable[Seq[VolumnFrom]] and
       (__ \ "RestartPolicy").writeNullable[ContainerRestartPolicy](Formats.containerRestartPolicyFmt) and
       (__ \ "PortBindings").writeNullable[Map[String, DockerPortBinding]](hostConfigPortBindingWrite) and
       (__ \ "Links").writeNullable[Seq[String]] and
@@ -281,7 +295,6 @@ object FormatsV112 {
       (__ \ "Env").readNullable[Seq[String]] and
       (__ \ "Dns").readNullable[String] and
       (__ \ "Volumes").readNullable[Map[String, DockerVolume]] and
-      (__ \ "VolumesFrom").readNullable[ContainerId].orElse(Reads.pure(None)) and
       (__ \ "WorkingDir").readNullable[String] and
       (__ \ "ExposedPorts").readNullable[Map[String, JsObject]].map { opt =>
         val regex = """^(\d+)/(tcp|udp)$""".r
@@ -309,7 +322,6 @@ object FormatsV112 {
       (__ \ "Env").writeNullable[Seq[String]] and
       (__ \ "Dns").writeNullable[String] and
       (__ \ "Volumes").writeNullable[Map[String, DockerVolume]] and
-      (__ \ "VolumesFrom").writeNullable[ContainerId] and
       (__ \ "WorkingDir").writeNullable[String] and
       (__ \ "ExposedPorts").writeNullable[Map[String, DockerPortBinding]](containerConfigPortBindingWrite) and
       (__ \ "Entrypoint").writeNullable[Seq[String]] and

@@ -19,7 +19,6 @@ sealed case class ContainerConfiguration(
     env: Option[Seq[String]] = None,
     dns: Option[String] = None,
     volumes: Option[Map[String, DockerVolume]] = None,
-    volumesFrom: Option[ContainerId] = None,
     workingDir: Option[String] = None,
     exposedPorts: Option[Map[String, DockerPortBinding]] = None,
     entryPoint: Option[Seq[String]] = None,

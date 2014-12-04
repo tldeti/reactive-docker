@@ -22,6 +22,8 @@ object DockerVolume {
 
 	  def apply(path: String, hostPath: String): DockerVolume = ContainerVolume(path)
 
+
+
 	  def unapply(v: DockerVolume): Option[(String, String)] = {
 	    v match {
 	      case bind: BindMountVolume => Some((bind.containerPath, bind.hostPath))
