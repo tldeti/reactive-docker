@@ -76,7 +76,7 @@ package object entities {
     containerIdFile: Option[String] = None,
     lxcConf: Option[Map[String, String]] = None,
     networkMode: ContainerNetworkingMode = ContainerNetworkingMode.Default,
-    volumesFrom: Option[Seq[VolumnFrom]] = None,
+    volumesFrom: Option[Seq[VolumeFrom]] = None,
     restartPolicy: Option[ContainerRestartPolicy] = None,
     portBindings: Option[Map[String, DockerPortBinding]] = None,
     links: Option[Seq[String]] = None,

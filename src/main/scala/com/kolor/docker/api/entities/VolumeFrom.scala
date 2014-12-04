@@ -1,22 +1,22 @@
 package com.kolor.docker.api.entities
 
-import com.kolor.docker.api.entities.VolumnFrom.RoERw
+import com.kolor.docker.api.entities.VolumeFrom.RoERw
 
 /**
  * Created by tldeti on 14-12-3.
  */
-case class VolumnFrom(containerName:ContainerName,roErw:RoERw){
+case class VolumeFrom(containerName:ContainerName,roErw:RoERw){
   override def toString =
     s"${containerName.toString}:${roErw.toString}"
 }
 
-object VolumnFrom{
-  def apply(str:String):Option[VolumnFrom] = {
+object VolumeFrom{
+  def apply(str:String):Option[VolumeFrom] = {
     val arr = str.split(":")
     if(arr.length == 2){
       val rOpt = RoERw(arr(1))
       rOpt.map(r=>
-        VolumnFrom(ContainerName(arr(0)),r)
+        VolumeFrom(ContainerName(arr(0)),r)
       )
     }else
       None

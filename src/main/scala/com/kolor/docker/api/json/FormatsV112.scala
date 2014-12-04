@@ -55,13 +55,13 @@ object FormatsV112 {
 
   implicit val containerNameFmt = Json.format[ContainerName]
 
-  implicit object volumnFromWrites extends Writes[VolumnFrom] {
-    def writes(d: VolumnFrom): JsValue = JsString(d.toString)
+  implicit object volumnFromWrites extends Writes[VolumeFrom] {
+    def writes(d: VolumeFrom): JsValue = JsString(d.toString)
   }
 
-  implicit val volumnFromReader = Reads[VolumnFrom](js => js match {
+  implicit val volumnFromReader = Reads[VolumeFrom](js => js match {
     case JsString(s) =>
-      VolumnFrom(s).map(JsSuccess(_)).getOrElse(JsError(ValidationError(s"not a valid volumnFrom str: $s")))
+      VolumeFrom(s).map(JsSuccess(_)).getOrElse(JsError(ValidationError(s"not a valid volumnFrom str: $s")))
     case _ => JsError(ValidationError("error.expected.jsstring"))
   })
     
@@ -251,7 +251,7 @@ object FormatsV112 {
       (__ \ "ContainerIdFile").readNullable[String] and
       (__ \ "LxcConf").readNullable[Map[String, String]] and
       (__ \ "NetworkMode").read[ContainerNetworkingMode](Formats.ContainerNetworkingModeFormat).orElse(Reads.pure(ContainerNetworkingMode.Default)) and
-        (__ \ "VolumesFrom").readNullable[Seq[VolumnFrom]].orElse(Reads.pure(None)) and
+        (__ \ "VolumesFrom").readNullable[Seq[VolumeFrom]].orElse(Reads.pure(None)) and
       (__ \ "RestartPolicy").readNullable[ContainerRestartPolicy](Formats.containerRestartPolicyFmt) and
       (__ \ "PortBindings").readNullable[Map[String, JsObject]].map { opt =>
         val regex = """^(\d+)/(tcp|udp)$""".r
@@ -270,7 +270,7 @@ object FormatsV112 {
       (__ \ "ContainerIdFile").writeNullable[String] and
       (__ \ "LxcConf").writeNullable[Map[String, String]] and
       (__ \ "NetworkMode").write[ContainerNetworkingMode](Formats.ContainerNetworkingModeFormat) and
-        (__ \ "VolumesFrom").writeNullable[Seq[VolumnFrom]] and
+        (__ \ "VolumesFrom").writeNullable[Seq[VolumeFrom]] and
       (__ \ "RestartPolicy").writeNullable[ContainerRestartPolicy](Formats.containerRestartPolicyFmt) and
       (__ \ "PortBindings").writeNullable[Map[String, DockerPortBinding]](hostConfigPortBindingWrite) and
       (__ \ "Links").writeNullable[Seq[String]] and
