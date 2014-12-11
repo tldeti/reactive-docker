@@ -49,12 +49,14 @@ sealed trait DockerClient extends DockerApi {
   }
   
   final def dockerJsonRequest[T](req: dispatch.Req)(implicit docker: DockerClient, fmt: Format[T]): Future[Either[Throwable, T]] = {
-    log.debug(s"dockerJsonRequest: ${req}")
     Http(req).either.map{
-      case Right(resp) if (Seq(200, 201, 202).contains(resp.getStatusCode())) => 
+      case Right(resp) if (Seq(200, 201, 202).contains(resp.getStatusCode())) =>
         Json.parse(resp.getResponseBody()).validate[T].fold(
-    		  errors => Left(new DockerResponseParseError(s"Json parse errors: ${errors.mkString("|")}", docker, resp.getResponseBody())),
-    		  data => Right(data) 
+    		  errors => {
+            Left(new DockerResponseParseError(s"Json parse errors: ${errors.mkString("|")}", docker, resp.getResponseBody))
+          }, {
+          data => Right(data)
+        }
         )
       //case Right(resp) if (resp.getStatusCode() == 409) => 
       //  throw new DockerConflictException(s"docker conflict (${req.url}) : ${resp.getResponseBody()}", docker)
@@ -71,7 +73,9 @@ sealed trait DockerClient extends DockerApi {
         Left(t)
     }
   }
-  
+
+
+  // TODO why useless check throwable
   final def dockerRequest(req: dispatch.Req)(implicit docker: DockerClient): Future[Either[Throwable, com.ning.http.client.Response]] = {
     log.debug(s"dockerRequest: ${req}")
     Http(req).either.recover{

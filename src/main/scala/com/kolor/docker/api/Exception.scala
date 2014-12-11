@@ -12,6 +12,30 @@ trait DockerException extends Exception {
 }
 
 
+sealed trait PrivateRegistryException extends DockerException
+sealed trait PrivateRegResponseException extends PrivateRegistryException{
+  def statusCode: Int
+}
+
+case class PRInternalException(message: String) extends PrivateRegResponseException{
+  val statusCode = 500
+}
+
+case class NoAuthException(message: String) extends PrivateRegResponseException{
+  val statusCode = 401
+}
+
+case class NotFoundException(message: String) extends PrivateRegResponseException{
+  val statusCode = 404
+}
+
+case class WTFException(message: String,statusCode:Int) extends PrivateRegResponseException{
+}
+
+case class PRRequestException(message:String,cause:Option[Throwable]) extends PrivateRegistryException
+
+
+
 trait DockerApiException extends DockerException {
   def client: DockerClient
 }
@@ -34,6 +58,8 @@ case class InvalidRepositoryTagFormatException(message: String, tag: String, cau
 
 case class DockerRequestException(message: String, client: DockerClient, cause: Option[Throwable] = None, request: Option[dispatch.Req]) extends DockerApiException {
 	cause.map(initCause(_))
+  override def toString =
+    message + cause.map(_.getMessage).getOrElse("")
 }
 
 case class DockerResponseParseError(message: String, client: DockerClient, response: String, cause: Option[Throwable] = None) extends DockerApiException {
@@ -45,6 +71,8 @@ case class DockerInternalServerErrorException(client: DockerClient, message: Str
 case class DockerBadParameterException(message: String, client: DockerClient, request: dispatch.Req, cause: Option[Throwable] = None) extends DockerApiException {
 	cause.map(initCause(_))
 }
+
+case class DockerAuthorizeException(message:String)
 
 case class ContainerNotRunningException(id: ContainerId, client: DockerClient) extends DockerApiException {
   def message = s"container $id is not running"

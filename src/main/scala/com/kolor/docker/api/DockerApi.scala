@@ -288,6 +288,7 @@ trait DockerContainerApi extends DockerApiHelper {
    */
   def containerCreate(image: String, config: ContainerConfiguration, name: Option[String] = None)(implicit docker: DockerClient, fmt: Format[ContainerConfiguration]): Future[(ContainerId, Seq[String])] = {
     val cfg = config.copy(image = Some(image))
+    log.info(s"${Json.prettyPrint(Json.toJson(cfg))}")
     val req = url(Endpoints.containerCreate(name).toString).POST << Json.prettyPrint(Json.toJson(cfg)) <:< Map("Content-Type" -> "application/json")
     docker.dockerRequest(req).map { 
       case Right(resp) if resp.getStatusCode() == 404 => 
@@ -662,7 +663,7 @@ trait DockerContainerApi extends DockerApiHelper {
    */
   def containerCommit(id: ContainerId, repoTag: RepositoryTag, runConfig: Option[ContainerConfiguration] = None, pause: Boolean = true)(implicit docker: DockerClient, fmt: Format[ContainerConfiguration]): Future[ContainerId] = {
     val cfg = runConfig.map(j => Json.prettyPrint(Json.toJson(j)))
-    val req = url(Endpoints.containerCommit(id, repoTag.repo, repoTag.tag, cfg, None, None, pause).toString).POST << cfg.getOrElse("{}")
+    val req = url(Endpoints.containerCommit(id, repoTag.repo, repoTag.tag, cfg, None, None, pause).toString).POST << cfg.getOrElse("{}")   <:< Map("Content-Type" -> "application/json")
     docker.dockerRequest(req).map { 
       case Right(resp) if resp.getStatusCode() == 404 => throw new NoSuchContainerException(id, docker)
       case Right(resp) if resp.getStatusCode() == 500 => throw new DockerInternalServerErrorException(docker)
@@ -681,7 +682,7 @@ trait DockerContainerApi extends DockerApiHelper {
     val commitMsg = withMessageAndAuthor
     val cfg = runConfig.map(j => Json.prettyPrint(Json.toJson(j)))
 
-    val req = url(Endpoints.containerCommit(id, repoTag.repo, repoTag.tag, cfg, Some(commitMsg._1), commitMsg._2, pause).toString).POST << cfg.getOrElse("{}")
+    val req = url(Endpoints.containerCommit(id, repoTag.repo, repoTag.tag, cfg, Some(commitMsg._1), commitMsg._2, pause).toString).POST << cfg.getOrElse("{}")  <:< Map("Content-Type" -> "application/json")
     docker.dockerRequest(req).map { 
       case Right(resp) if resp.getStatusCode() == 404 => throw new NoSuchContainerException(id, docker)
       case Right(resp) if resp.getStatusCode() == 500 => throw new DockerInternalServerErrorException(docker)
