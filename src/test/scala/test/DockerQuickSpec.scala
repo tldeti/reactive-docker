@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory
 @RunWith(classOf[JUnitRunner])
 class DockerQuickSpec extends Specification {
   
-  import com.kolor.docker.api.json.FormatsV112._
+  import com.kolor.docker.api.json.Formats._
 
   implicit def defaultAwaitTimeout: Duration = Duration(20, SECONDS)
 

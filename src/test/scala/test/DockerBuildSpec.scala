@@ -22,8 +22,8 @@ import com.netaporter.uri.Uri
 
 class DockerBuildSpec extends Specification {
 
-  import com.kolor.docker.api.json.FormatsV112._
-  
+  import com.kolor.docker.api.json.Formats._
+
   implicit def defaultAwaitTimeout: Duration = Duration.create(40, SECONDS)
   
   implicit val docker = Docker("localhost", 2375)

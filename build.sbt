@@ -4,7 +4,7 @@ name := "reactive-docker"
 
 version := "0.1-SNAPSHOT"
 
-scalaVersion := "2.11.2"
+scalaVersion := "2.11.4"
 
 resolvers += Resolver.sonatypeRepo("releases")
 
@@ -56,20 +56,24 @@ scalacOptions ++= Seq("-deprecation","-language:_")
 
   javacOptions ++= Seq("-target", "1.6", "-source","1.6")
 
-val logbackVer = "1.0.9"
+val logbackVer = "1.1.2"
 
 libraryDependencies ++= Seq(
             //"org.scalaz.stream" %% "scalaz-stream" % "0.3.1",
-            "com.netaporter" %% "scala-uri" % "0.4.2",
-            "com.typesafe.play" %% "play-json" % "2.3.4",
+            "com.netaporter" %% "scala-uri" % "0.4.4",
+            "com.typesafe.play" %% "play-json" % "2.3.7",
             "com.typesafe.play" %% "play-iteratees" % "2.3.4",
             // "com.typesafe.akka" %% "akka-actor" % "2.4-SNAPSHOT",
             "net.databinder.dispatch" %% "dispatch-core" % "0.11.2",
-            "org.specs2" %% "specs2" % "2.4.2" % "test",
+            "org.specs2" %% "specs2" % "2.4.15" % "test",
             "ch.qos.logback" % "logback-core" % logbackVer,
             "ch.qos.logback" % "logback-classic" % logbackVer,
-            "org.apache.commons" % "commons-compress" % "1.8.1"
+            "org.apache.commons" % "commons-compress" % "1.9",
+            "org.parboiled" %% "parboiled" % "2.0.1",
+            "org.scalaz" %% "scalaz-core" % "7.1.0"
   )
+
+transitiveClassifiers in Global := Seq(Artifact.SourceClassifier)
 
 // see https://github.com/typesafehub/scalalogging/issues/23
 testOptions in Test += Tests.Setup(classLoader =>

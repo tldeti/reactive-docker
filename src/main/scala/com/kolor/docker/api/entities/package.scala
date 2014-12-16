@@ -51,7 +51,18 @@ package object entities {
     portMapping: Option[Seq[String]] = None,
     ports: Option[Seq[DockerPortBinding]] = None) extends DockerEntity
 
-  case class DockerPortBinding(privatePort: Int, publicPort: Option[Int] = None, protocol: Option[String] = None, hostIp: Option[String] = None) extends DockerEntity
+  case class DockerHostIpPort(hostIp:String,hostPort:String)
+  case class DockerPortBinding(privatePort: Int,  protocol: Option[String] = None, hosts:Seq[DockerHostIpPort]) extends DockerEntity
+
+  /*
+   * not the same as DockerPortBinding,ExposedPorts is used by  container linking.
+   * may be multiple ExposedPorts
+   * "ExposedPorts": { "<port>/<tcp|udp>: {}" }
+   */
+  case class ExposedPorts(privatePort: Int, protocol: Option[String] = None){
+    override def toString =
+      s"$privatePort${protocol.fold("")("/"+_)}:{}"
+  }
 
   sealed trait ContainerNetworkingMode extends DockerEntity { def name: String }
 
@@ -69,19 +80,23 @@ package object entities {
     name: String,
     maximumRetryCount: Int) extends DockerEntity
 
+
+  // no Devices field
   case class ContainerHostConfiguration(
     privileged: Boolean = false,
     publishAllPorts: Boolean = false,
-    binds: Option[Seq[BindMountVolume]] = None,
+    binds: Option[Seq[VolumeBind]] = None,
     containerIdFile: Option[String] = None,
     lxcConf: Option[Map[String, String]] = None,
     networkMode: ContainerNetworkingMode = ContainerNetworkingMode.Default,
     volumesFrom: Option[Seq[VolumeFrom]] = None,
     restartPolicy: Option[ContainerRestartPolicy] = None,
-    portBindings: Option[Map[String, DockerPortBinding]] = None,
+    portBindings: Option[Seq[DockerPortBinding]] = None,
     links: Option[Seq[String]] = None,
-    capAdd: Seq[String] = Seq.empty, // new with 1.14
-    capDrop: Seq[String] = Seq.empty // new with 1.14
+    capAdd: Option[Seq[String]] = None, // new with 1.14
+    capDrop: Option[Seq[String]] = None, // new with 1.14
+    dns: Option[Seq[String]] = None,
+    dnsSearch: Option[Seq[String]] = None
     ) extends DockerEntity
 
   case class ContainerInfo(
@@ -99,7 +114,7 @@ package object entities {
     hostnamePath: Option[String] = None,
     hostsPath: Option[String] = None,
     driver: Option[String] = None,
-    volumes: Option[Seq[DockerVolume]] = None,
+    volumes: Option[Seq[ContainerVolume]] = None,
     volumesRW: Option[Map[String, Boolean]] = None) extends DockerEntity
 
   case class ContainerChangelogRecord(

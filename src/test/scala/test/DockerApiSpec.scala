@@ -1,28 +1,17 @@
 
 package test
 
-import org.specs2.mutable.Specification
-import org.specs2.specification.AllExpectations
 import com.kolor.docker.api._
-import org.specs2.specification.Scope
-import org.specs2.specification.Before
-import scala.concurrent.duration.DurationConversions._
-import scala.concurrent.duration._
-import scala.concurrent._
 import com.kolor.docker.api.entities._
-import org.joda.time.DateTime
-import org.specs2.execute._
-import org.specs2.specification._
-import org.specs2.matcher.FutureMatchers.await
-import scala.concurrent.ExecutionContext.Implicits.global
-import play.api.libs.iteratee._
 import org.slf4j.LoggerFactory
-import com.netaporter.uri.Uri
-import com.netaporter.uri.Uri
+import org.specs2.mutable.Specification
+import play.api.libs.iteratee._
+
+import scala.concurrent._
+import scala.concurrent.duration._
+import com.kolor.docker.api.json.Formats._
 
 class DockerApiSpec extends Specification {
-
-  import com.kolor.docker.api.json.FormatsV112._
   
   implicit def defaultAwaitTimeout: Duration = Duration.create(40, SECONDS)
   

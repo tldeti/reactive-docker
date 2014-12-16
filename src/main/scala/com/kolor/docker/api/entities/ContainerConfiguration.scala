@@ -2,6 +2,7 @@ package com.kolor.docker.api.entities
 
 import play.api.libs.json._
 
+// no Domainname,CpuShares,Cpuset,MacAddress,SecurityOpts
 sealed case class ContainerConfiguration(
     image: Option[String] = None,
     cmd: Option[Seq[String]] = None,
@@ -16,14 +17,15 @@ sealed case class ContainerConfiguration(
     tty: Option[Boolean] = None,
     openStdin: Option[Boolean] = None,
     stdinOnce: Option[Boolean] = None,
+    hostConfig: Option[ContainerHostConfiguration] = None,
     env: Option[Seq[String]] = None,
-    dns: Option[String] = None,
-    volumes: Option[Map[String, DockerVolume]] = None,
+//    dns: Option[String] = None,    dns move in to hostConfig
+    volumes: Option[Seq[ContainerVolume]] = None,
     workingDir: Option[String] = None,
-    exposedPorts: Option[Map[String, DockerPortBinding]] = None,
+    exposedPorts: Option[Seq[ExposedPorts]] = None,
     entryPoint: Option[Seq[String]] = None,
     networkDisabled: Option[Boolean] = Some(false),
-    onBuild: Option[Seq[String]] = None
+    onBuild: Option[Seq[String]] = None  // TODO  really in this?
 ) extends DockerEntity
 
 object ContainerConfig {

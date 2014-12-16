@@ -392,7 +392,9 @@ trait DockerContainerApi extends DockerApiHelper {
   
   /**
    * start a container
+   *
    */
+  @deprecated("depreacate at docker remote api v1.6,use containerCreate's config instead")
   def containerStart(id: ContainerId, config: Option[ContainerHostConfiguration] = None)(implicit docker: DockerClient, fmt: Format[ContainerHostConfiguration]): Future[Boolean] = {
     val req = config match {
       	case Some(cfg) => url(Endpoints.containerStart(id).toString).POST << Json.prettyPrint(Json.toJson(cfg)) <:< Map("Content-Type" -> "application/json")
@@ -405,6 +407,19 @@ trait DockerContainerApi extends DockerApiHelper {
       case Right(resp) if (resp.getStatusCode() == 304) => true		// new with 1.13 => container status was not modified
       case Right(resp) if (resp.getStatusCode() == 404) => throw new NoSuchContainerException(id, docker)
       case Right(resp) => throw new DockerRequestException(s"unable to start container $id (StatusCode: ${resp.getStatusCode()}): ${resp.getStatusText()}", docker, None, Some(req))
+      case Left(t) => throw new DockerRequestException(s"unable to start container $id", docker, Some(t), Some(req))
+    }
+  }
+
+  def containerStart(id: ContainerId)(implicit docker: DockerClient, fmt: Format[ContainerHostConfiguration]): Future[Boolean] = {
+    val req = url(Endpoints.containerStart(id).toString).POST <:< Map("Content-Type" -> "application/json")
+
+    docker.dockerRequest(req).map {
+      case Right(resp) if resp.getStatusCode() == 200 => true
+      case Right(resp) if resp.getStatusCode() == 204 => true
+      case Right(resp) if resp.getStatusCode() == 304 => true		// new with 1.13 => container status was not modified
+      case Right(resp) if resp.getStatusCode() == 404 => throw new NoSuchContainerException(id, docker)
+      case Right(resp) => throw new DockerRequestException(s"unable to start container $id (StatusCode: ${resp.getStatusCode}): ${resp.getStatusText}", docker, None, Some(req))
       case Left(t) => throw new DockerRequestException(s"unable to start container $id", docker, Some(t), Some(req))
     }
   }

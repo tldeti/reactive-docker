@@ -1,6 +1,7 @@
 
 package test
 
+import com.kolor.docker.api.json.Formats._
 import org.specs2.mutable.Specification
 import org.specs2.specification.AllExpectations
 import com.kolor.docker.api._
@@ -17,7 +18,6 @@ import org.specs2.matcher.FutureMatchers.await
 import scala.concurrent.ExecutionContext.Implicits.global
 import org.junit.runner.RunWith
 import org.specs2.runner.JUnitRunner
-import com.kolor.docker.api.json.FormatsV112._
 import play.api.libs.iteratee._
 import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit

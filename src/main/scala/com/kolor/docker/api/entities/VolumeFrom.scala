@@ -1,6 +1,5 @@
 package com.kolor.docker.api.entities
 
-import com.kolor.docker.api.entities.VolumeFrom.RoERw
 
 /**
  * Created by tldeti on 14-12-3.
@@ -21,20 +20,20 @@ object VolumeFrom{
     }else
       None
   }
+}
 
-  sealed trait RoERw
-  case object Ro extends RoERw{
-    override def toString = "ro"
+sealed trait RoERw
+case object Ro extends RoERw{
+  override def toString = "ro"
+}
+case object Rw extends RoERw{
+  override def toString = "rw"
+}
+object RoERw{
+  def apply(s:String) = s match {
+    case "ro" => Some(Ro)
+    case "rw" => Some(Rw)
+    case _ => None
   }
-  case object Rw extends RoERw{
-    override def toString = "rw"
-  }
-  object RoERw{
-    def apply(s:String) = s match {
-      case "ro" => Some(Ro)
-      case "rw" => Some(Rw)
-      case _ => None
-    }
 
-  }
 }
