@@ -52,6 +52,8 @@ package object entities {
     ports: Option[Seq[DockerPortBinding]] = None) extends DockerEntity
 
   case class DockerHostIpPort(hostIp:String,hostPort:String)
+
+
   case class DockerPortBinding(privatePort: Int,  protocol: Option[String] = None, hosts:Seq[DockerHostIpPort]) extends DockerEntity
 
   /*

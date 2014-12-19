@@ -394,7 +394,7 @@ trait DockerContainerApi extends DockerApiHelper {
    * start a container
    *
    */
-  @deprecated("depreacate at docker remote api v1.6,use containerCreate's config instead")
+  @deprecated("depreacated,use containerCreate's config instead","since docker remote api v1.6")
   def containerStart(id: ContainerId, config: Option[ContainerHostConfiguration] = None)(implicit docker: DockerClient, fmt: Format[ContainerHostConfiguration]): Future[Boolean] = {
     val req = config match {
       	case Some(cfg) => url(Endpoints.containerStart(id).toString).POST << Json.prettyPrint(Json.toJson(cfg)) <:< Map("Content-Type" -> "application/json")

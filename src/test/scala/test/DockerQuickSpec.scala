@@ -127,7 +127,7 @@ class DockerQuickSpec extends Specification {
         }
         
         log.info("pulling busybox image")
-        (docker.imageCreate(RepositoryTag("busybox"))).map{u => 
+        (docker.imageCreate(RepositoryTag("busybox"))).map{u =>
         	log.info("image has been created")
         	docker.imageRemove("busybox").map{_ =>
         		log.info(s"image has been removed")

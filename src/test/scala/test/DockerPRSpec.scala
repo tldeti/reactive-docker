@@ -1,6 +1,6 @@
 package test
 
-import com.kolor.docker.api.{DockerRegistry, Docker}
+import com.kolor.docker.api.{privateRegistry$, Docker}
 import org.specs2.Specification
 
 /**

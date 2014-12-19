@@ -12,8 +12,13 @@ trait DockerAuth{
   def serverAddress: String
   def asBase64Encoded: String =
       base64Encoder.encode(
-          s"""{"username":"$username", "password":"$password", "email":"$email", "serveraddress":"$serverAddress"}""".getBytes()
+          s"""{"username":"$username", "password":"$password", "email":"$email", "serveraddress":"$serverAddress"}""".getBytes
       ).replaceAll("(?:\\r\\n|\\n\\r|\\n|\\r)", "")
+
+  def pRBase64Encoded: String =
+    base64Encoder.encode(
+      s"""$username:$password""".getBytes
+    )
 }
 
 case class DockerAuthCredentials(

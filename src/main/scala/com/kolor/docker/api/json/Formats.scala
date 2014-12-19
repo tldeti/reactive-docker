@@ -1,6 +1,5 @@
 package com.kolor.docker.api.json
 
-import com.kolor.docker.api.entities.Parser.{PortProtocol, VolumeBindParser}
 import com.kolor.docker.api.entities._
 import org.joda.time.DateTime
 import play.api.data.validation.ValidationError
@@ -33,7 +32,6 @@ trait PartialFormat[T <: DockerEntity] extends Format[T] {
 
 
 object Formats {
-
   implicit def String2ISODateTime(s: String): ISODateTimeString = new ISODateTimeString(s)
 
   implicit def int2Boolean(i: Int): Boolean = i match {
@@ -129,7 +127,7 @@ import scalaz._
     Reads[Seq[DockerPortBinding]] {
       case JsObject(fields) =>
         Applicative[JsResult].traverse(fields.to[List]){ fie =>
-          val portProtocel: Try[PortProtocol] = new Parser.PortProtocelParser(fie._1).InputLine.run()
+          val portProtocel: Try[PortProtocol] = new DockerParser(fie._1).PortWithProtocel.run()
           portProtocel.map(pP =>
             fie._2 match {
               case JsNull => JsSuccess(DockerPortBinding(pP.port,pP.protocol,Nil))
@@ -160,7 +158,7 @@ import scalaz._
     Reads[Seq[ExposedPorts]] {
       case JsObject(fields) =>
         Applicative[JsResult].traverse(fields.toList)(fie =>
-          new Parser.PortProtocelParser(fie._1).InputLine.run() match {
+          new DockerParser(fie._1).PortWithProtocel.run() match {
             case scala.util.Success(x) =>
               fie._2 match {
                 case JsObject(o) if o.size == 0 =>
@@ -211,7 +209,7 @@ import scalaz._
   implicit val volumeBinds:Format[VolumeBind] = Format[VolumeBind](
     Reads[VolumeBind]{
       case JsString(str) =>
-        val vbt:Try[VolumeBind] = new VolumeBindParser(str).InputLine.run()
+        val vbt:Try[VolumeBind] = new DockerParser(str).Binds.run()
         vbt match {
           case scala.util.Success(vb) => JsSuccess(vb)
           case scala.util.Failure(x) => JsError("volumeBind parse Error,"+x.getMessage)

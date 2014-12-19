@@ -186,10 +186,14 @@ sealed case class DockerClientV114(dockerHost: String, dockerPort: Int) extends 
   final val dockerApiVersion: String = "1.14"
 }
 
+final case class DockerClientV116(dockerHost: String, dockerPort: Int) extends DockerClient {
+  final val dockerApiVersion: String = "1.16"
+}
+
 
 object Docker {
   def apply(host: String): DockerClient = {
-    DockerClientV114(host, 4243)
+    DockerClientV116(host, 4243)
   }
   
   def apply(host: String, port: Int): DockerClient = {

@@ -2,8 +2,8 @@ package test
 
 import java.util.concurrent.TimeUnit._
 
-import com.kolor.docker.api.entities.{DockerAuth, RepTWithNS, RepositoryTag}
-import com.kolor.docker.api.{DockerRegistry, Docker, DockerClient}
+import com.kolor.docker.api.entities.{DockerAuth, RepTWithNS, PublicRepositoryTag$}
+import com.kolor.docker.api.{privateRegistry$, Docker, DockerClient}
 import com.kolor.docker.dsl._
 import com.kolor.docker.dsl.Dockerfile
 import org.slf4j.LoggerFactory
@@ -22,21 +22,21 @@ object PrivateRegistryTestUtil {
   val log = LoggerFactory.getLogger(getClass())
   class PrivateRegistryContext extends Scope {
     implicit val docker = Docker("localhost")
-    implicit lazy val registry = DockerRegistry("192.168.0.120", 5000)
+    implicit lazy val registry = privateRegistry("192.168.0.120", 5000)
     implicit val timeout = 60 seconds
   }
 
   trait DockerPrivateEnv[T] extends AroundOutside[T] {
     implicit val docker = Docker("localhost", 2375)
-    implicit val registry = DockerRegistry("192.168.0.120", 5000)
+    implicit val registry = privateRegistry("192.168.0.120", 5000)
     implicit val timeout = 60 seconds
   }
 
 
 
-  def image:DockerEnv[RepositoryTag] = new DockerEnv[RepositoryTag] {
+  def image:DockerEnv[PublicRepositoryTag] = new DockerEnv[PublicRepositoryTag] {
     val cmd = Seq("/bin/sh", "-c", "while true; do echo hello world; sleep 1; done")
-    val repoTag = RepositoryTag.create("busybox", Some("latest"))
+    val repoTag = PublicRepositoryTag.create("busybox", Some("latest"))
 
 
     // create a context
@@ -53,6 +53,6 @@ object PrivateRegistryTestUtil {
     }
 
     // prepare a valid ImageEnv
-    def outside: RepositoryTag = repoTag
+    def outside: PublicRepositoryTag = repoTag
   }
 }

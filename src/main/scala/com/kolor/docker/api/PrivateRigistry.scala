@@ -8,31 +8,31 @@ import play.api.libs.json.Format
 import scala.concurrent.ExecutionContext
 
 
-final case class DockerRegistry(host: String, port: Int, version: String)
+final case class NoIndexRegistry$(host: String, port: Int, version: String)
 
-object DockerRegistry {
-  def apply(host: String, port: Int): DockerRegistry =
-    new DockerRegistry(host, port, "v1")
+object NoIndexRegistry$ extends NoIndexRegistryFunc{
+  def apply(host: String, port: Int): NoIndexRegistry$ =
+    new NoIndexRegistry$(host, port, "v1")
 }
 
 object PrivateRegistryEndpoint {
-  def baseReq(implicit registry: DockerRegistry) =
+  def baseReq(implicit registry: NoIndexRegistry$) =
     host(registry.host, registry.port) / registry.version secure
 
-  def deleteRepoTag(r: RepTWithNS)(implicit registry: DockerRegistry) = {
-    baseReq / "repositories" / r.namespace / r.repoTag.repo / "tags" / r.repoTag.tag.getOrElse("latest")
+  def deleteRepoTag(r: RepoLocation)(implicit registry: NoIndexRegistry$) = {
+    baseReq / "repositories" / r.namespace / r.repo / "tags" / r.tag
   }
 
-  def deleteRepo(r: RepTWithNS)(implicit registry: DockerRegistry) = {
-    baseReq / "repositories" / r.namespace / r.repoTag.repo / "tags"
+  def deleteRepo(r: RepoLocation)(implicit registry: NoIndexRegistry$) = {
+    baseReq / "repositories" / r.namespace / r.repo / "tags"
   }
 }
+
 
 /**
  * Created by tldeti on 14-12-10.
  */
-trait PrivateRegistryApi {
-  self: DockerClient =>
+trait NoIndexRegistryFunc {
   import com.kolor.docker.api.json.Formats._
   def pRRequest(req: Req)(implicit exec:ExecutionContext):Future[Either[PrivateRegistryException,Response]] =
     Http(req).map(resp =>
@@ -40,6 +40,7 @@ trait PrivateRegistryApi {
         case x if x.getStatusCode == 200 => Right(x)
         case x if x.getStatusCode == 500 => Left(PRInternalException(resp.getResponseBody))
         case x if x.getStatusCode == 401 => Left(NoAuthException(resp.getResponseBody))
+        case x if x.getStatusCode == 404 => Left(NotFoundException(resp.getResponseBody))
         case x => Left(WTFException(resp.getResponseBody, resp.getStatusCode))
       }
     ).recover {
@@ -49,12 +50,12 @@ trait PrivateRegistryApi {
 
   private def authHeaderMap(auth:DockerAuth) = auth match {
     case DockerAnonymousAuth => Map()
-    case data => Map("X-Registry-Auth" -> data.asBase64Encoded)
+    case data => Map("Authorization" -> s"Basic ${data.pRBase64Encoded}")
   }
 
 
-  def deleteRepoTag(r:RepTWithNS)(
-    implicit d: DockerRegistry, auth: DockerAuth,exec:ExecutionContext
+  def deleteRepoTag(r:RepoLocation)(
+    implicit d: NoIndexRegistry$, auth: DockerAuth,exec:ExecutionContext
     ):Future[Either[PrivateRegistryException,Unit]] = {
     val req = PrivateRegistryEndpoint.deleteRepoTag(r).DELETE <:< authHeaderMap(auth)
     pRRequest(req).map(x =>
@@ -66,9 +67,11 @@ trait PrivateRegistryApi {
    * from https://github.com/docker/docker-registry/issues/45 , delete request is
    * DELETE /v1/repositories/<namespace>/<path:repository>/tags , not
    * DELETE /v1/repositories/<namespace>/<path:repository>/   which in specs
+   *
+   * note: this only delete repo's all tag. need shell to delete relate no tag image.
    */
-  def deleteRepo(r:RepTWithNS)(
-    implicit d: DockerRegistry, auth: DockerAuth,exec:ExecutionContext): Future[Either[PrivateRegistryException, Unit]] = {
+  def deleteRepo(r:RepoLocation)(
+    implicit d: NoIndexRegistry$, auth: DockerAuth,exec:ExecutionContext): Future[Either[PrivateRegistryException, Unit]] = {
     val req = PrivateRegistryEndpoint.deleteRepo(r).DELETE <:< authHeaderMap(auth)
     pRRequest(req).map { x=>
       x.right.map(_=>())
