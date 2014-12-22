@@ -55,7 +55,7 @@ class DockerApiSpec extends Specification {
         }
         
         log.info("pulling busybox image")
-        (docker.imageCreate(RepositoryTag("busybox"))).map{u =>
+        (docker.imageCreate(RepoTagLocation.indexRepoT("busybox"))).map{u =>
         	log.info("image has been created")
         	docker.imageRemove("busybox").map{_ =>
         		log.info(s"image has been removed")
@@ -107,7 +107,7 @@ class DockerApiSpec extends Specification {
     
     "create / pull a new image from busybox base image" in new DockerContext {
       try {
-    	val res = await(docker.imageCreate(RepositoryTag.create("busybox", Some("pullTest"))))
+    	val res = await(docker.imageCreate(RepoTagLocation.indexRepoTDefault(None,"busybox", Some("pullTest"))))
     	    	
     	res must not be empty
     	res.size must be_>(0)
@@ -165,7 +165,7 @@ class DockerApiSpec extends Specification {
     
     "remove an image" in new DockerContext {
       try {
-        await(docker.imageCreate(RepositoryTag("busybox")))
+        await(docker.imageCreate(RepoTagLocation.indexRepoT("busybox")))
         val res = await(docker.imageRemove("busybox"))
         res.size must be_>(0)
       } finally {
@@ -213,7 +213,7 @@ class DockerApiSpec extends Specification {
         case Some(s) => s must be_==(env.containerName)
       }
       
-      first.image.repo must be_==(env.image.repo)
+      first.image.repoName must be_==(env.image.repoName)
     }
     
     "inspect a simple container" in container {env:Container => 
@@ -355,13 +355,14 @@ class DockerApiSpec extends Specification {
       
       info.state.running must be_==(true)
       
-      val id = await(docker.containerCommit(env.containerId, RepositoryTag.create("dockerspec", Some("committest")), Some(cfg)))
+      val id = await(docker.containerCommit(env.containerId, RepoTagLocation.indexRepoTDefault(None,"dockerspec", Some("committest")), Some(cfg)))
       id.id must not be empty
     }
     
     "commit a container with message and author" in runningContainer {env:Container =>
       val cfg = ContainerConfiguration(cmd = Some(Seq("echo")))
-      val id = await(docker.containerCommitWithMessage(env.containerId, RepositoryTag.create("dockerspec", Some("commitmessagetest")), ("some commit message", Some("someAuthor")), Some(cfg)))
+      val id = await(docker.containerCommitWithMessage(env.containerId, RepoTagLocation.indexRepoTDefault(
+        None,"dockerspec", Some("commitmessagetest")), ("some commit message", Some("someAuthor")), Some(cfg)))
       id.id must not be empty
     }
   }

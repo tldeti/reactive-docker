@@ -1,15 +1,5 @@
 package test
 
-import com.kolor.docker.api.Docker
-import com.kolor.docker.api.entities.{NoIndexRepositoryLocation, RepoLocation}
-import com.kolor.docker.dsl.{Dockerfile, _}
-import org.slf4j.LoggerFactory
-import org.specs2.execute.AsResult
-import org.specs2.specification.{AroundOutside, Scope}
-
-import scala.concurrent.Await
-import scala.concurrent.duration._
-
 /**
  * Created by tldeti on 14-12-12.
  */

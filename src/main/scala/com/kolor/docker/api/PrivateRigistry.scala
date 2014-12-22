@@ -8,23 +8,23 @@ import play.api.libs.json.Format
 import scala.concurrent.ExecutionContext
 
 
-final case class NoIndexRegistry$(host: String, port: Int, version: String)
+final case class NoIndexRegistry(host: String, port: Int, version: String)
 
-object NoIndexRegistry$ extends NoIndexRegistryFunc{
-  def apply(host: String, port: Int): NoIndexRegistry$ =
-    new NoIndexRegistry$(host, port, "v1")
+object NoIndexRegistry extends NoIndexRegistryFunc{
+  def apply(host: String, port: Int): NoIndexRegistry =
+    new NoIndexRegistry(host, port, "v1")
 }
 
 object PrivateRegistryEndpoint {
-  def baseReq(implicit registry: NoIndexRegistry$) =
+  def baseReq(implicit registry: NoIndexRegistry) =
     host(registry.host, registry.port) / registry.version secure
 
-  def deleteRepoTag(r: RepoLocation)(implicit registry: NoIndexRegistry$) = {
-    baseReq / "repositories" / r.namespace / r.repo / "tags" / r.tag
+  def deleteRepoTag(r: NoIndexRepoTagLocation)(implicit registry: NoIndexRegistry) = {
+    baseReq / "repositories" / r.repoLocation.namespace / r.repoLocation.toString / "tags" / r.tag
   }
 
-  def deleteRepo(r: RepoLocation)(implicit registry: NoIndexRegistry$) = {
-    baseReq / "repositories" / r.namespace / r.repo / "tags"
+  def deleteRepo(r: NoIndexRepoLocation)(implicit registry: NoIndexRegistry) = {
+    baseReq / "repositories" / r.namespace / r.toString / "tags"
   }
 }
 
@@ -54,8 +54,8 @@ trait NoIndexRegistryFunc {
   }
 
 
-  def deleteRepoTag(r:RepoLocation)(
-    implicit d: NoIndexRegistry$, auth: DockerAuth,exec:ExecutionContext
+  def deleteRepoTag(r:NoIndexRepoTagLocation)(
+    implicit d: NoIndexRegistry, auth: DockerAuth,exec:ExecutionContext
     ):Future[Either[PrivateRegistryException,Unit]] = {
     val req = PrivateRegistryEndpoint.deleteRepoTag(r).DELETE <:< authHeaderMap(auth)
     pRRequest(req).map(x =>
@@ -70,8 +70,8 @@ trait NoIndexRegistryFunc {
    *
    * note: this only delete repo's all tag. need shell to delete relate no tag image.
    */
-  def deleteRepo(r:RepoLocation)(
-    implicit d: NoIndexRegistry$, auth: DockerAuth,exec:ExecutionContext): Future[Either[PrivateRegistryException, Unit]] = {
+  def deleteRepo(r:NoIndexRepoLocation)(
+    implicit d: NoIndexRegistry, auth: DockerAuth,exec:ExecutionContext): Future[Either[PrivateRegistryException, Unit]] = {
     val req = PrivateRegistryEndpoint.deleteRepo(r).DELETE <:< authHeaderMap(auth)
     pRRequest(req).map { x=>
       x.right.map(_=>())

@@ -15,28 +15,28 @@ class DockerEntitySpec extends Specification {
   "Docker entities should" should {
 
     "accept repository tags of public docker registry " in {
-      val tagWithoutVersion = RepositoryTag("ubuntu")
-      val tagWithVersion = RepositoryTag("ubuntu/latest")
+      val tagWithoutVersion = RepoTagLocation.indexRepoTParse("ubuntu").get
+      val tagWithVersion = RepoTagLocation.indexRepoTParse("ubuntu:latest").get
 
-      tagWithoutVersion.repo must be_!==("ubuntu")
-      tagWithoutVersion.tag must beNone
+      tagWithoutVersion.repoLocation.repoName must be_!==("ubuntu")
+      tagWithoutVersion.tag must_== "latest"
 
-      tagWithVersion.repo must be_==("ubuntu")
-      tagWithVersion.tag must beSome("latest")
+      tagWithVersion.repoLocation.repoName must be_==("ubuntu")
+      tagWithVersion.tag must_== "latest"
     }
 
     "accept repository tags of private registries" in {
-      val tagWithPrivateRegistryWithVersion = RepositoryTag("192.168.0.120:5000/test:latest")
-      tagWithPrivateRegistryWithVersion.repo must be_==("192.168.0.120:5000/test")
-      tagWithPrivateRegistryWithVersion.tag must beSome("latest")
+      val tagWithPrivateRegistryWithVersion = RepoTagLocation.indexRepoTParse("192.168.0.120:5000/test:latest").get
+      tagWithPrivateRegistryWithVersion.repoLocation.toString must be_==("192.168.0.120:5000/test")
+      tagWithPrivateRegistryWithVersion.tag must_== "latest"
 
-      val tagWithPrivateRegistryWithoutVersion = RepositoryTag("192.168.0.120:5000/test")
-      tagWithPrivateRegistryWithoutVersion.repo must be_==("192.168.0.120:5000/test")
-      tagWithPrivateRegistryWithoutVersion.tag must beNone
+      val tagWithPrivateRegistryWithoutVersion = RepoTagLocation.indexRepoTParse("192.168.0.120:5000/test").get
+      tagWithPrivateRegistryWithoutVersion.repoLocation.toString must be_==("192.168.0.120:5000/test")
+      tagWithPrivateRegistryWithoutVersion.tag must_== "latest"
 
-      val tagWithPrivateRegistryDomainWithVersion = RepositoryTag("some.tld.com/test:latest")
-      tagWithPrivateRegistryDomainWithVersion.repo must be_==("some.tld.com/test")
-      tagWithPrivateRegistryDomainWithVersion.tag must beSome("latest")
+      val tagWithPrivateRegistryDomainWithVersion = RepoTagLocation.indexRepoTParse("some.tld.com/test:latest").get
+      tagWithPrivateRegistryDomainWithVersion.repoLocation.toString must be_==("some.tld.com/test")
+      tagWithPrivateRegistryDomainWithVersion.tag must_== "latest"
     }
 
   }

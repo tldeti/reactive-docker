@@ -26,7 +26,7 @@ package object entities {
 
   case class Container(
     id: ContainerId,
-    image: RepositoryTag,
+    image: IndexRepoLocation,
     names: Option[Seq[String]],
     command: String,
     created: DateTime,
@@ -131,7 +131,7 @@ package object entities {
   case class DockerImage(
     id: String,
     parentId: Option[String],
-    repoTags: Option[Seq[RepositoryTag]],
+    repoTags: Option[Seq[IndexRepoLocation]],
     created: DateTime,
     size: Long,
     virtualSize: Long) extends DockerEntity

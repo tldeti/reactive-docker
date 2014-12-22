@@ -78,14 +78,18 @@ object Formats {
     }
   }
 
-  implicit object RepositoryTagFormat extends PartialFormat[RepositoryTag] {
-    def partialReads: PartialFunction[JsValue, JsResult[RepositoryTag]] = {
-      case o: JsString if o.value.nonEmpty => JsSuccess(RepositoryTag(o.as[String]))
+  implicit object IndexRepoLocationFormat extends PartialFormat[IndexRepoLocation] {
+    def partialReads: PartialFunction[JsValue, JsResult[IndexRepoLocation]] = {
+      case o: JsString if o.value.nonEmpty =>
+        RepoTagLocation.indexRepoTParse(o.value) match {
+          case scala.util.Success(repTLoc) =>JsSuccess(repTLoc.repoLocation)
+          case scala.util.Failure(x) => JsError(s"index repoTParse error,${o.value}")
+        }
       case _ => JsError("repository tag is empty or invalid")
     }
 
     val partialWrites: PartialFunction[DockerEntity, JsValue] = {
-      case tag: RepositoryTag => JsString(tag.toString)
+      case tag: IndexRepoLocation => JsString(tag.toString)
     }
   }
 
@@ -500,7 +504,7 @@ import scalaz._
   implicit val containerFmt = Format(
     (
       (__ \ "Id").read[ContainerId] and
-        (__ \ "Image").read[RepositoryTag] and
+        (__ \ "Image").read[IndexRepoLocation] and
         (__ \ "Names").read[JsArray].map {
           case arr if (arr.value.size > 0) => Some(arr.value.seq.map {
             case JsString(s) => s.stripPrefix("/")
@@ -521,7 +525,7 @@ import scalaz._
   implicit val imageFmt: Format[DockerImage] = Format(
     ((__ \ "Id").read[String] and
       (__ \ "ParentId").read[Option[String]] and
-      (__ \ "RepoTags").readNullable[Seq[RepositoryTag]] and
+      (__ \ "RepoTags").readNullable[Seq[IndexRepoLocation]] and
       (__ \ "Created").read[Long].map(new org.joda.time.DateTime(_)) and
       (__ \ "Size").read[Long] and
       (__ \ "VirtualSize").read[Long])(DockerImage.apply _),

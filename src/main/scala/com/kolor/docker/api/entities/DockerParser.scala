@@ -42,11 +42,16 @@ class DockerParser (val input:ParserInput) extends Parser{
       oneOrMore(CharPredicate.AlphaNum | anyOf("""_-."""))
     }
 
-    def NoIndexRepoLoc = rule {
+    def NoIndexRepoTagLoc = rule {
       capture(oneOrMore(CharPredicate.AlphaNum | anyOf(""":_-."""))) ~ "/" ~ capture(DockerName) ~ optional(":" ~ capture(DockerName)) ~>
         ((path:String, repo:String, tag:Option[String]) =>
-          NoIndexRepositoryLocation("library",path,repo,tag.getOrElse("latest")))
+          RepoTagLocation.noIndexRepoTDefault(path ,repo, tag))
     }
 
+    def IndexRepoLoc = rule {
+      optional(capture(oneOrMore(CharPredicate.AlphaNum | anyOf("""_-."""))) ~ "/") ~ capture(DockerName) ~ optional(":" ~ capture(DockerName)) ~>
+        ((namespace:Option[String], repo:String, tag:Option[String]) =>
+          RepoTagLocation.indexRepoTDefault(namespace,repo,tag))
+    }
 
   }

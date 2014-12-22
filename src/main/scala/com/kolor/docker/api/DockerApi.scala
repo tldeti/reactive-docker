@@ -34,7 +34,7 @@ sealed trait DockerApiHelper {
     }
   }
   
-  def recoverImageAwareRequest[A](it: Future[Iteratee[Array[Byte], A]])(implicit client: DockerClient, image: String) = {
+  def recoverImageAwareRequest[A](it: Future[Iteratee[Array[Byte], A]],image:String)(implicit client: DockerClient) = {
     it.recoverWith{
       case DockerResponseCode(404, err) => Future.failed(new NoSuchImageException(image, client))
       case DockerResponseCode(500, err) => Future.failed(new DockerInternalServerErrorException(client, err))
@@ -676,39 +676,39 @@ trait DockerContainerApi extends DockerApiHelper {
   /**
    * commit a container to repoTag without commit message
    */
-  def containerCommit(id: ContainerId, repoTag: RepositoryTag, runConfig: Option[ContainerConfiguration] = None, pause: Boolean = true)(implicit docker: DockerClient, fmt: Format[ContainerConfiguration]): Future[ContainerId] = {
+  def containerCommit(id: ContainerId, loc: RepoTagLocation, runConfig: Option[ContainerConfiguration] = None, pause: Boolean = true)(implicit docker: DockerClient, fmt: Format[ContainerConfiguration]): Future[ContainerId] = {
     val cfg = runConfig.map(j => Json.prettyPrint(Json.toJson(j)))
-    val req = url(Endpoints.containerCommit(id, repoTag.repo, repoTag.tag, cfg, None, None, pause).toString).POST << cfg.getOrElse("{}")   <:< Map("Content-Type" -> "application/json")
-    docker.dockerRequest(req).map { 
+    val req = url(Endpoints.containerCommit(id, loc.repoLocation.toString, Some(loc.tag), cfg, None, None, pause).toString).POST << cfg.getOrElse("{}")   <:< Map("Content-Type" -> "application/json")
+    docker.dockerRequest(req).map {
       case Right(resp) if resp.getStatusCode() == 404 => throw new NoSuchContainerException(id, docker)
       case Right(resp) if resp.getStatusCode() == 500 => throw new DockerInternalServerErrorException(docker)
-      case Right(resp) if (Seq(200, 201).contains(resp.getStatusCode())) => 
+      case Right(resp) if (Seq(200, 201).contains(resp.getStatusCode())) =>
         val json = Json.parse(resp.getResponseBody()).asOpt[JsObject]
         val newId: ContainerId = json.flatMap(j => (j \ "Id").asOpt[String]).map(ContainerId(_)).getOrElse(ContainerId.emptyId)
         newId
-      case Left(t) => throw new DockerRequestException(s"commit container $id (tag: ${repoTag.toString}) failed", docker, Some(t), Some(req))
+      case Left(t) => throw new DockerRequestException(s"commit container $id (tag: ${loc.tag.toString}) failed", docker, Some(t), Some(req))
     }
   }
 
   /**
    * commit a container to repoTag with comment and author
    */
-  def containerCommitWithMessage(id: ContainerId, repoTag: RepositoryTag, withMessageAndAuthor: (String, Option[String]), runConfig: Option[ContainerConfiguration] = None, pause: Boolean = true)(implicit docker: DockerClient, fmt: Format[ContainerConfiguration]): Future[ContainerId] = {
+  def containerCommitWithMessage(id: ContainerId, loc: RepoTagLocation, withMessageAndAuthor: (String, Option[String]), runConfig: Option[ContainerConfiguration] = None, pause: Boolean = true)(implicit docker: DockerClient, fmt: Format[ContainerConfiguration]): Future[ContainerId] = {
     val commitMsg = withMessageAndAuthor
     val cfg = runConfig.map(j => Json.prettyPrint(Json.toJson(j)))
 
-    val req = url(Endpoints.containerCommit(id, repoTag.repo, repoTag.tag, cfg, Some(commitMsg._1), commitMsg._2, pause).toString).POST << cfg.getOrElse("{}")  <:< Map("Content-Type" -> "application/json")
-    docker.dockerRequest(req).map { 
+    val req = url(Endpoints.containerCommit(id, loc.repoLocation.toString, Some(loc.tag), cfg, Some(commitMsg._1), commitMsg._2, pause).toString).POST << cfg.getOrElse("{}")  <:< Map("Content-Type" -> "application/json")
+    docker.dockerRequest(req).map {
       case Right(resp) if resp.getStatusCode() == 404 => throw new NoSuchContainerException(id, docker)
       case Right(resp) if resp.getStatusCode() == 500 => throw new DockerInternalServerErrorException(docker)
-      case Right(resp) if (Seq(200, 201).contains(resp.getStatusCode())) => 
+      case Right(resp) if (Seq(200, 201).contains(resp.getStatusCode())) =>
         val json = Json.parse(resp.getResponseBody()).asOpt[JsObject]
         val newId: ContainerId = json.flatMap(j => (j \ "Id").asOpt[String]).map(ContainerId(_)).getOrElse(ContainerId.emptyId)
         newId
       case Left(t) => throw new DockerRequestException(s"commit container $id failed", docker, Some(t), Some(req))
     }
   }
-  
+
 }
 
 /**
@@ -716,7 +716,7 @@ trait DockerContainerApi extends DockerApiHelper {
  * contains all images related api operations
  */
 trait DockerImagesApi extends DockerApiHelper {
-  
+
   private val log = LoggerFactory.getLogger(this.getClass());
 
   /**
@@ -724,7 +724,7 @@ trait DockerImagesApi extends DockerApiHelper {
    */
   def images(all: Boolean = false)(implicit docker: DockerClient, fmt: Format[DockerImage]): Future[Seq[DockerImage]] = {
     val req = url(Endpoints.images(all).toString).GET
-    docker.dockerJsonRequest[Seq[DockerImage]](req).map { 
+    docker.dockerJsonRequest[Seq[DockerImage]](req).map {
       case Right(images) => images
       case Left(StatusCode(500)) => throw new DockerInternalServerErrorException(docker)
       case Left(t) => throw new DockerRequestException(s"list images request failed", docker, Some(t), Some(req))
@@ -735,21 +735,20 @@ trait DockerImagesApi extends DockerApiHelper {
    * create or pull an image from registry
    * allows realtime processing of response by given consumer iteratee
    */
-  def imageCreateIteratee[T](repoTag: RepositoryTag, registry: Option[String] = None, fromSrc: Option[String] = None)(consumer: Iteratee[Array[Byte], T])(implicit docker: DockerClient, auth: DockerAuth = DockerAnonymousAuth): Future[Iteratee[Array[Byte], T]] = {
+  def imageCreateIteratee[T](loc: RepoTagLocation, registry: Option[String] = None, fromSrc: Option[String] = None)(consumer: Iteratee[Array[Byte], T])(implicit docker: DockerClient, auth: DockerAuth = DockerAnonymousAuth): Future[Iteratee[Array[Byte], T]] = {
     val req = auth match {
-    	case DockerAnonymousAuth => url(Endpoints.imageCreate(repoTag.repo, fromSrc, Some(repoTag.repo), repoTag.tag, registry).toString).POST
-    	case data => url(Endpoints.imageCreate(repoTag.repo, fromSrc, Some(repoTag.repo), repoTag.tag, registry).toString).POST <:< Map("X-Registry-Auth" -> data.asBase64Encoded)
+    	case DockerAnonymousAuth => url(Endpoints.imageCreate(loc.repoLocation.toString, fromSrc, Some(loc.repoLocation.toString), Some(loc.tag), registry).toString).POST
+    	case data => url(Endpoints.imageCreate(loc.repoLocation.toString, fromSrc, Some(loc.repoLocation.toString), Some(loc.tag), registry).toString).POST <:< Map("X-Registry-Auth" -> data.asBase64Encoded)
     }
-    implicit val image = repoTag.repo
-    recoverImageAwareRequest(docker.dockerRequestIteratee(req)(_ => consumer))
+    recoverImageAwareRequest(docker.dockerRequestIteratee(req)(_ => consumer),loc.toString)
   }
 
   /**
    * create or pull an image from registry
    * collects and returns list of messages/errors on completion
    */
-  def imageCreate(repoTag: RepositoryTag, registry: Option[String] = None, fromSrc: Option[String] = None)(implicit docker: DockerClient, auth: DockerAuth = DockerAnonymousAuth): Future[List[Either[DockerErrorInfo, DockerStatusMessage]]] = {
-    imageCreateIteratee(repoTag, registry, fromSrc)(DockerIteratee.statusStream).flatMap(_.run)
+  def imageCreate(loc: RepoTagLocation, registry: Option[String] = None, fromSrc: Option[String] = None)(implicit docker: DockerClient, auth: DockerAuth = DockerAnonymousAuth): Future[List[Either[DockerErrorInfo, DockerStatusMessage]]] = {
+    imageCreateIteratee(loc, registry, fromSrc)(DockerIteratee.statusStream).flatMap(_.run)
   }
 
   /**
@@ -760,7 +759,7 @@ trait DockerImagesApi extends DockerApiHelper {
   def imageInsertResourceIteratee[T](image: String, imageTargetPath: String, sourceFileUrl: java.net.URI)(consumer: Iteratee[Array[Byte], T])(implicit docker: DockerClient): Future[Iteratee[Array[Byte], T]] = {
     val req = url(Endpoints.imageInsert(image, imageTargetPath, sourceFileUrl).toString).POST
     implicit val img = image
-    recoverImageAwareRequest(docker.dockerRequestIteratee(req)(_ => consumer))
+    recoverImageAwareRequest(docker.dockerRequestIteratee(req)(_ => consumer),image)
   }
 
   /**
@@ -808,8 +807,7 @@ trait DockerImagesApi extends DockerApiHelper {
     	case DockerAnonymousAuth => url(Endpoints.imagePush(image, registry).toString).POST
     	case data => url(Endpoints.imagePush(image, registry).toString).POST <:< Map("X-Registry-Auth" -> data.asBase64Encoded)
     }
-    implicit val img = image
-    recoverImageAwareRequest(docker.dockerRequestIteratee(req)(_ => consumer))
+    recoverImageAwareRequest(docker.dockerRequestIteratee(req)(_ => consumer),image)
   }
 
   /**
@@ -872,8 +870,7 @@ trait DockerImagesApi extends DockerApiHelper {
    */
   def imageExport[T](image: String)(consumer: Iteratee[Array[Byte], T])(implicit docker: DockerClient): Future[Iteratee[Array[Byte], T]] = {
     val req = url(Endpoints.imageExport(image).toString).GET
-    implicit val img = image
-    recoverImageAwareRequest(docker.dockerRequestIteratee(req)(_ => consumer))
+    recoverImageAwareRequest(docker.dockerRequestIteratee(req)(_ => consumer),image)
   }
 
   /**

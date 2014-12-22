@@ -20,11 +20,11 @@ package object test {
 	  implicit val timeout = Duration.create(60, SECONDS)
   }
   
-  case class Image(imageCmd: Seq[String], imageTag: RepositoryTag) {
-	  def imageName = imageTag.repo
+  case class Image(imageCmd: Seq[String], imageTag: IndexRepoTagLocation) {
+	  def imageName = imageTag.repoLocation.toString
   }
 	
-  case class Container(containerId: ContainerId, containerName: String, image: RepositoryTag, imageCmd: Seq[String])
+  case class Container(containerId: ContainerId, containerName: String, image: IndexRepoLocation, imageCmd: Seq[String])
 	
   trait DockerEnv[T] extends AroundOutside[T] {
 	  implicit val docker = Docker("localhost", 2375)
@@ -37,7 +37,7 @@ package object test {
 	 */
 	def image:DockerEnv[Image] = new DockerEnv[Image] {
 	  val cmd = Seq("/bin/sh", "-c", "while true; do echo hello world; sleep 1; done")
-	  val env = new Image(cmd, RepositoryTag.create("busybox", Some("latest")))
+	  val env = new Image(cmd, RepoTagLocation.indexRepoTDefault(None,"busybox", Some("latest")))
 	  
 	  // create a context
 	  def around[T : AsResult](t: =>T) = {
@@ -61,7 +61,7 @@ package object test {
 	  val env = {
 	    val cmd = Seq("/bin/sh", "-c", "while true; do echo hello world; sleep 1; done")
 	    val containerName = "reactive-docker"
-	    val imageTag = RepositoryTag.create("busybox", Some("latest"))
+	    val imageTag = RepoTagLocation.indexRepoTDefault(None,"busybox", Some("latest"))
 	    val cfg = ContainerConfig("busybox", cmd)
 	    log.info(s"prepare container context - pulling busybox:latest ...")
 
@@ -71,7 +71,7 @@ package object test {
 
 		val containerId = Await.result(docker.containerCreate("busybox", cfg, Some(containerName)), timeout)._1	
 		log.info(s"prepare container context - container ready with  $containerId")
-	    new Container(containerId, containerName, imageTag, cmd)
+	    new Container(containerId, containerName, imageTag.repoLocation, cmd)
 	  }
 	  
 	  // create a context
@@ -101,8 +101,8 @@ package object test {
     val env = {
       val cmd = Seq("/bin/bash")
       val containerName = "reactive-docker"
-      val imageTag = RepositoryTag.create("ubuntu", Some("latest"))
-      val cfg = ContainerConfiguration(image=Some(imageTag.repo), cmd=Some(cmd), openStdin=Some(true)   )
+      val imageTag = RepoTagLocation.indexRepoTDefault(None,"ubuntu", Some("latest"))
+      val cfg = ContainerConfiguration(image=Some(imageTag.repoLocation.toString), cmd=Some(cmd), openStdin=Some(true)   )
 
       log.info(s"prepare container context - pulling ubuntu:latest ...")
 
@@ -112,7 +112,7 @@ package object test {
 
       val containerId = Await.result(docker.containerCreate("ubuntu", cfg, Some(containerName)), timeout)._1
       log.info(s"prepare container context - container ready with  $containerId")
-      new Container(containerId, containerName, imageTag, cmd)
+      new Container(containerId, containerName, imageTag.repoLocation, cmd)
     }
 
     // create a context
@@ -143,7 +143,7 @@ package object test {
 	    val cmd = Seq("/bin/sh", "-c", "while true; do echo hello world && echo hello stderr >&2; sleep 1; done")
 
 	    val containerName = "reactive-docker"
-	    val imageTag = RepositoryTag.create("busybox", Some("latest"))
+	    val imageTag = RepoTagLocation.indexRepoTDefault(None,"busybox", Some("latest"))
 	    val cfg = ContainerConfig("busybox", cmd)
 	    log.info(s"prepare runningContainer context - pulling busybox:latest ...")
 
@@ -158,7 +158,7 @@ package object test {
 		Await.result(docker.containerStart(containerId), timeout)
 		log.info(s"prepare runningContainer context - container $containerId running")
 
-	    new Container(containerId, containerName, imageTag, cmd)
+	    new Container(containerId, containerName, imageTag.repoLocation, cmd)
 	  }
 	  
 	  // create a context
@@ -189,7 +189,7 @@ package object test {
 	  val env = {
 	    val cmd = Seq("/bin/sh", "-c", "while true; do echo hello world && echo hello stderr >&2; sleep 1; done")
 	    val containerName = "reactive-docker"
-	    val imageTag = RepositoryTag.create("busybox", Some("latest"))
+	    val imageTag = RepoTagLocation.indexRepoTDefault(None,"busybox", Some("latest"))
 	    val cfg = ContainerConfig("busybox", cmd)
 	    log.info(s"prepare runningComplexContainer context - pulling busybox:latest ...")
 
@@ -204,7 +204,7 @@ package object test {
 		Await.result(docker.containerStart(containerId), timeout)
 		log.info(s"prepare runningComplexContainer context - container $containerId running")
 
-	    new Container(containerId, containerName, imageTag, cmd)
+	    new Container(containerId, containerName, imageTag.repoLocation, cmd)
 	  }
 	  
 	  // create a context

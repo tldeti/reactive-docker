@@ -78,7 +78,7 @@ class DockerQuickSpec extends Specification {
       }
       
       try {
-      	val res = await(docker.imageCreate(RepositoryTag.create("busybox", Some("pullTest"))))
+      	val res = await(docker.imageCreate(RepoTagLocation.indexRepoTDefault(None,"busybox", Some("pullTest"))))
       	
       	res must not be empty
       	res.size must be_>(0)
@@ -101,7 +101,7 @@ class DockerQuickSpec extends Specification {
         case e:NoSuchImageException => // ignore
       }
       
-      val res = await(docker.imageCreate(RepositoryTag("busybox")))
+      val res = await(docker.imageCreate(RepoTagLocation.indexRepoT("busybox")))
       
       res must not be empty
       res.size must be_>(0)
@@ -127,7 +127,7 @@ class DockerQuickSpec extends Specification {
         }
         
         log.info("pulling busybox image")
-        (docker.imageCreate(RepositoryTag("busybox"))).map{u =>
+        (docker.imageCreate(RepoTagLocation.indexRepoT("busybox"))).map{u =>
         	log.info("image has been created")
         	docker.imageRemove("busybox").map{_ =>
         		log.info(s"image has been removed")
