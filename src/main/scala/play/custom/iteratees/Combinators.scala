@@ -31,7 +31,7 @@ object Combinators {
   def done[A](a: A) = Done[Array[Char], A](a)
 
   def FailOnEof[E, A](f: E => Iteratee[E, A]): Iteratee[E, A] = Cont {
-    case in @ EOF => Error("Premature end of input", in)
+    case EOF => Error("Premature end of input", EOF)
     case Empty => FailOnEof(f)
     case El(data) => f(data)
   }
@@ -50,7 +50,7 @@ object Combinators {
 
 
   def drop(n: Int): Iteratee[Array[Char], Unit] = Cont {
-    case in @ EOF => Done(Unit, in)
+    case EOF => Done(Unit, EOF)
     case Empty => drop(n)
     case El(data) => {
       val remaining = n - data.length
@@ -75,7 +75,7 @@ object Combinators {
   } yield result
 
   def dropWhile(p: Char => Boolean): Iteratee[Array[Char], Unit] = Cont {
-    case in @ EOF => Done(Unit, in)
+    case EOF => Done(Unit, EOF)
     case Empty => dropWhile(p)
     case El(data) => {
       val dropped = data.dropWhile(p)
@@ -88,7 +88,7 @@ object Combinators {
   }
 
   def peekWhile(p: Char => Boolean, peeked: Array[Char] = Array[Char]()): Iteratee[Array[Char], String] = Cont {
-    case in @ EOF => Done(new String(peeked), El(peeked))
+    case EOF => Done(new String(peeked), El(peeked))
     case Empty => peekWhile(p, peeked)
     case El(data) => {
       val taken = data.takeWhile(p)
@@ -105,7 +105,7 @@ object Combinators {
   }
 
   val peekOne: Iteratee[Array[Char], Option[Char]] = Cont {
-    case in @ EOF => Done(None, in)
+    case EOF => Done(None, EOF)
     case Empty => peekOne
     case in @ El(data) => {
       data.headOption.map(c => Done(Some(c), in)).getOrElse(peekOne)

@@ -52,7 +52,7 @@ object Endpoints {
   }
   
   def containerCreate(name: Option[String] = None)(implicit docker: DockerClient): Uri = {
-    (baseUri / "containers" / "create") ? ("name", name)
+    (baseUri / "containers" / "create") ? ("name" -> name)
   }
   
   def containerInspect(id: ContainerId)(implicit docker: DockerClient): Uri = {

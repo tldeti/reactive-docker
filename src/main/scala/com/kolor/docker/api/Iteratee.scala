@@ -16,24 +16,24 @@ object DockerIteratee {
 
 object DockerEnumeratee {
   
-  protected val log = LoggerFactory.getLogger(this.getClass());
+  protected val log = LoggerFactory.getLogger(this.getClass);
   
   def statusStream(charset: String = "utf-8"): Enumeratee[Array[Byte], Either[DockerErrorInfo, DockerStatusMessage]] = {    
     		Enumeratee.map[Array[Byte]]{chr => 
-    		  	val str = (new String(chr, charset)).trim
-    			log.debug(s"statusStreamEnumeratee decoded: '${str}'")
+    		  	val str = new String(chr, charset).trim
+    			log.debug(s"statusStreamEnumeratee decoded: '$str'")
     		  	str
     		} ><>
     		Enumeratee.collect[String]{
-    		  case str if (str.nonEmpty) => str.toCharArray
+    		  case str if str.nonEmpty => str.toCharArray
     		} ><>
 //    		play.extras.iteratees.Combinators.errorReporter ><>
 			Enumeratee.grouped(play.custom.iteratees.JsonIteratees.jsSimpleObject) ><>
 			Enumeratee.collect[JsObject]{
-			  case obj if (obj.fields.size > 0) => obj
+			  case obj if obj.fields.size > 0 => obj
 			} ><>
 			Enumeratee.map[JsObject]{json =>
-			  	log.debug(s"statusStreamEnumeratee simpleObject: ${json}")
+			  	log.debug(s"statusStreamEnumeratee simpleObject: $json")
 				com.kolor.docker.api.json.Formats.dockerStatusMessageFmt.reads(json)
 			} ><>
 			Enumeratee.collect[JsResult[DockerStatusMessage]] { 
@@ -43,7 +43,7 @@ object DockerEnumeratee {
 			    DockerStatusMessage(error = Some(DockerErrorInfo(Some(-1), Some(s"unable to parse JSON: " + err.mkString))))
 			} ><>
 			Enumeratee.map[DockerStatusMessage]{status => status match {
-	    	  	case msg if (msg.error.nonEmpty && !msg.isError) => 
+	    	  	case msg if msg.error.nonEmpty && !msg.isError =>
 	    	  	  val msg = status.copy(error = None)
 	    	  	  log.debug("statusStreamEnumeratee empty errorMsg mapped to statusMsg: " + msg)
 	    	  	  Right(msg)
@@ -71,7 +71,7 @@ object DockerEnumeratee {
     */
 
     def read(n: Int): Iteratee[Array[Byte], Array[Byte]] = Cont {
-      case in @ EOF => Done(Array.empty, in)
+      case EOF => Done(Array.empty, EOF)
       case Empty => read(n)
       case El(data) => {
         val remaining = n - data.length
@@ -90,7 +90,7 @@ object DockerEnumeratee {
     }
 
     def header = read(8).map{
-    	case hdr if (hdr.length == 8) => (hdr.drop(1).head.toInt, getInt(hdr.drop(4)))
+    	case hdr if hdr.length == 8 => (hdr.drop(1).head.toInt, getInt(hdr.drop(4)))
       case _ => (-1, 0) // set stream to -1 indicates error / empty response
     }
 
@@ -114,7 +114,7 @@ object DockerEnumeratee {
     
       Enumeratee.grouped(chunk) ><>
       Enumeratee.collect[DockerRawStreamChunk]{
-        case chunk if (chunk.channel >= 0) => chunk   // filter empty/error chunks
+        case chunk if chunk.channel >= 0 => chunk   // filter empty/error chunks
       }
   }
   
