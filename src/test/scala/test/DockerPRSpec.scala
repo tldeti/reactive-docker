@@ -1,8 +1,5 @@
 package test
 
-import com.kolor.docker.api.{privateRegistry$, Docker}
-import org.specs2.Specification
-
 /**
  * Created by tldeti on 14-12-11.
  */

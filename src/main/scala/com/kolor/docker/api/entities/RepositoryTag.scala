@@ -56,6 +56,9 @@ case class NoIndexRepositoryLocation(override val namespace:String,override val 
 																		 override val tag:String) extends RepoLocation(namespace,path,repo,tag)
 
 object RepoLocation{
-	def noIndexRepoT(s:String):Try[NoIndexRepositoryLocation] =
+	def noIndexRepoTParse(s:String):Try[NoIndexRepositoryLocation] =
 		new DockerParser(s).NoIndexRepoLoc.run()
+	
+	def noIndexRepoTDefault(path:String,repo:String) =
+		NoIndexRepositoryLocation("library",path,repo,"lastest")
 }
