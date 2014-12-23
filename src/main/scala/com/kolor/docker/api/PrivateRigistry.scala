@@ -20,11 +20,11 @@ object PrivateRegistryEndpoint {
     host(registry.host, registry.port) / registry.version secure
 
   def deleteRepoTag(r: NoIndexRepoTagLocation)(implicit registry: NoIndexRegistry) = {
-    baseReq / "repositories" / r.repoLocation.namespace / r.repoLocation.toString / "tags" / r.tag
+    baseReq / "repositories" / r.repoLocation.namespace / r.repoLocation.noTagImage / "tags" / r.tag
   }
 
   def deleteRepo(r: NoIndexRepoLocation)(implicit registry: NoIndexRegistry) = {
-    baseReq / "repositories" / r.namespace / r.toString / "tags"
+    baseReq / "repositories" / r.namespace / r.noTagImage / "tags"
   }
 }
 
@@ -39,8 +39,8 @@ trait NoIndexRegistryFunc {
       resp match {
         case x if x.getStatusCode == 200 => Right(x)
         case x if x.getStatusCode == 500 => Left(PRInternalException(resp.getResponseBody))
-        case x if x.getStatusCode == 401 => Left(NoAuthException(resp.getResponseBody))
-        case x if x.getStatusCode == 404 => Left(NotFoundException(resp.getResponseBody))
+        case x if x.getStatusCode == 401 => Left(PRNoAuthException(resp.getResponseBody))
+        case x if x.getStatusCode == 404 => Left(PRNotFoundException(resp.getResponseBody))
         case x => Left(WTFException(resp.getResponseBody, resp.getStatusCode))
       }
     ).recover {

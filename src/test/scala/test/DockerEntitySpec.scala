@@ -27,15 +27,15 @@ class DockerEntitySpec extends Specification {
 
     "accept repository tags of private registries" in {
       val tagWithPrivateRegistryWithVersion = RepoTagLocation.indexRepoTParse("192.168.0.120:5000/test:latest").get
-      tagWithPrivateRegistryWithVersion.repoLocation.toString must be_==("192.168.0.120:5000/test")
+      tagWithPrivateRegistryWithVersion.repoLocation.noTagImage must be_==("192.168.0.120:5000/test")
       tagWithPrivateRegistryWithVersion.tag must_== "latest"
 
       val tagWithPrivateRegistryWithoutVersion = RepoTagLocation.indexRepoTParse("192.168.0.120:5000/test").get
-      tagWithPrivateRegistryWithoutVersion.repoLocation.toString must be_==("192.168.0.120:5000/test")
+      tagWithPrivateRegistryWithoutVersion.repoLocation.noTagImage must be_==("192.168.0.120:5000/test")
       tagWithPrivateRegistryWithoutVersion.tag must_== "latest"
 
       val tagWithPrivateRegistryDomainWithVersion = RepoTagLocation.indexRepoTParse("some.tld.com/test:latest").get
-      tagWithPrivateRegistryDomainWithVersion.repoLocation.toString must be_==("some.tld.com/test")
+      tagWithPrivateRegistryDomainWithVersion.repoLocation.noTagImage must be_==("some.tld.com/test")
       tagWithPrivateRegistryDomainWithVersion.tag must_== "latest"
     }
 

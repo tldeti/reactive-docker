@@ -89,7 +89,7 @@ object Formats {
     }
 
     val partialWrites: PartialFunction[DockerEntity, JsValue] = {
-      case tag: IndexRepoLocation => JsString(tag.toString)
+      case tag: IndexRepoLocation => JsString(tag.noTagImage)
     }
   }
 

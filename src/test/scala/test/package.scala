@@ -21,7 +21,7 @@ package object test {
   }
   
   case class Image(imageCmd: Seq[String], imageTag: IndexRepoTagLocation) {
-	  def imageName = imageTag.repoLocation.toString
+	  def imageName = imageTag.repoLocation.noTagImage
   }
 	
   case class Container(containerId: ContainerId, containerName: String, image: IndexRepoLocation, imageCmd: Seq[String])
@@ -102,7 +102,7 @@ package object test {
       val cmd = Seq("/bin/bash")
       val containerName = "reactive-docker"
       val imageTag = RepoTagLocation.indexRepoTDefault(None,"ubuntu", Some("latest"))
-      val cfg = ContainerConfiguration(image=Some(imageTag.repoLocation.toString), cmd=Some(cmd), openStdin=Some(true)   )
+      val cfg = ContainerConfiguration(image=Some(imageTag.repoLocation.noTagImage), cmd=Some(cmd), openStdin=Some(true)   )
 
       log.info(s"prepare container context - pulling ubuntu:latest ...")
 

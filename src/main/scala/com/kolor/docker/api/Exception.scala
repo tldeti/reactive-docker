@@ -21,12 +21,16 @@ case class PRInternalException(message: String) extends PrivateRegResponseExcept
   val statusCode = 500
 }
 
-case class NoAuthException(message: String) extends PrivateRegResponseException{
+case class PRNoAuthException(message: String) extends PrivateRegResponseException{
   val statusCode = 401
 }
 
-case class NotFoundException(message: String) extends PrivateRegResponseException{
+case class PRNotFoundException(message: String) extends PrivateRegResponseException{
   val statusCode = 404
+}
+
+case class DockerParseException(parser: String, parseStr: String) extends DockerException{
+  def message = s"$parser: $parseStr"
 }
 
 case class WTFException(message: String,statusCode:Int) extends PrivateRegResponseException{
