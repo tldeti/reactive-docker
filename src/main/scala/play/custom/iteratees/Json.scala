@@ -344,7 +344,7 @@ import Combinators._
                      error: Option[String])
 
     def stringContents(sb: StringBuilder = new StringBuilder, escaped: Option[StringBuilder] = None): Iteratee[Array[Char], String] = Cont {
-      case in @ EOF => Error("Unexpected end of input in the middle of a String", in)
+      case EOF => Error("Unexpected end of input in the middle of a String", EOF)
       case Empty => stringContents(sb, escaped)
       case El(data) => {
 

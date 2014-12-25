@@ -1,10 +1,8 @@
-package com.kolor.docker.api
+package com.kolor.docker.api.entities
 
 import org.joda.time.DateTime
 
-package object entities {
-
-  case class DockerErrorInfo(code: Option[Int] = None, message: Option[String] = None) extends DockerEntity {
+case class DockerErrorInfo(code: Option[Int] = None, message: Option[String] = None) extends DockerEntity {
     override def toString = s"DockerErrorInfo(code=${code}, message=${message.getOrElse("")})"
     def isEmpty = code.isEmpty && message.isEmpty
   }
@@ -184,5 +182,3 @@ package object entities {
     )
 
   case class DockerVersion(version: String, gitCommit: Option[String], goVersion: Option[String], arch: Option[String], kernelVersion: Option[String], os: Option[String], apiVersion: Option[String])
-
-}
