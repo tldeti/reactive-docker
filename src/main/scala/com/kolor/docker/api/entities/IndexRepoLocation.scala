@@ -26,11 +26,11 @@ case class NoIndexRepoLocation(path:String, namespace:String,override val repoNa
 sealed abstract class RepoTagLocation(val repoLocation:RepoLocation ,val tag: String)
 
 case class IndexRepoTagLocation(override val repoLocation: IndexRepoLocation,override val   tag: String) extends RepoTagLocation(repoLocation,tag){
-	def image = s"${repoLocation.noTagImage}:$tag"
+	def imageName = s"${repoLocation.noTagImage}"
 }
 
 case class NoIndexRepoTagLocation(override val  repoLocation: NoIndexRepoLocation,override val tag:String ) extends RepoTagLocation(repoLocation,tag){
-	def image = s"${repoLocation.noTagImage}:$tag"
+	def imageName = s"${repoLocation.noTagImage}"
 }
 
 //case class NoIndexRepositoryTagLocation(override val namespace:String,override val path:String,override val repo:String,

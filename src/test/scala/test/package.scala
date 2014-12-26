@@ -14,6 +14,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 package object test {
   
   private val log = LoggerFactory.getLogger(getClass())
+  implicit val auth = DockerAnonymousAuth
   
   class DockerContext extends Scope {
 	  implicit lazy val docker: DockerClient = Docker("localhost", 2375)

@@ -25,6 +25,7 @@ class DockerQuickSpec extends Specification {
   
   import com.kolor.docker.api.json.Formats._
 
+  implicit val auth = DockerAnonymousAuth
   implicit def defaultAwaitTimeout: Duration = Duration(20, SECONDS)
 
   implicit val docker = Docker("localhost", 2375)

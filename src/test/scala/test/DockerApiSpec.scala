@@ -6,12 +6,13 @@ import com.kolor.docker.api.entities._
 import org.slf4j.LoggerFactory
 import org.specs2.mutable.Specification
 import play.api.libs.iteratee._
-
 import scala.concurrent._
 import scala.concurrent.duration._
 import com.kolor.docker.api.json.Formats._
+import com.kolor.docker.api.entities.DockerAnonymousAuth
 
 class DockerApiSpec extends Specification {
+  implicit val auth = DockerAnonymousAuth
   
   implicit def defaultAwaitTimeout: Duration = Duration.create(40, SECONDS)
   
