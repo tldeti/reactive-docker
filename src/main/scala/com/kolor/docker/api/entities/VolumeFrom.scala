@@ -6,7 +6,7 @@ package com.kolor.docker.api.entities
  */
 case class VolumeFrom(containerName:ContainerName,roErw:RoERw){
   override def toString =
-    s"${containerName.toString}:${roErw.toString}"
+    containerName.toString + ":"+ roErw.toString
 }
 
 object VolumeFrom{

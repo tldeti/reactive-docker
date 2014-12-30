@@ -11,16 +11,12 @@ trait DockerVolume extends DockerEntity {
 
 final case class ContainerVolume(path:String)
 
-final case class VolumeBind(containerPath:String,hostPath:Option[String],rw:Option[RoERw])
+final case class VolumeBind(hostPath:String,containerPath:Option[String],rw:Option[RoERw])
 
 //sealed case class ContainerVolume(containerPath: String, hostPath: String = "") extends DockerVolume {
 //  override def toString = s"$containerPath"
 //}
 
-sealed case class BindMountVolume(containerPath: String, hostPath: String, `type`: String = "ro") extends DockerVolume{
-  override def toString = s"$containerPath:$hostPath:${`type`}"
-}
-		
 object DockerVolume {
 
 	  private val pattern = """^([^:]+):(/[^:]+):(ro|rw)$""".r

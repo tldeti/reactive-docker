@@ -2,6 +2,9 @@ package com.kolor.docker.api.entities
 
 import org.joda.time.DateTime
 
+
+//desgin decision, only model the document says.not says use string or js value
+
 case class DockerErrorInfo(code: Option[Int] = None, message: Option[String] = None) extends DockerEntity {
     override def toString = s"DockerErrorInfo(code=${code}, message=${message.getOrElse("")})"
     def isEmpty = code.isEmpty && message.isEmpty

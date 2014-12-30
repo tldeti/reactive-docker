@@ -222,7 +222,7 @@ import scalaz._
         JsError(s"VolumBind should be a string, ${Json.stringify(x)}")
     },
     Writes[VolumeBind]( vb =>
-      JsString(s"${vb.containerPath}${vb.hostPath.fold("")(v=>s":$v")}${vb.rw.fold("")(v=>s":${v.toString}")}}")
+      JsString(s"${vb.hostPath}${vb.containerPath.fold("")(v=>s":$v")}${vb.rw.fold("")(v=>s":${v.toString}")}")
     )
   )
 
