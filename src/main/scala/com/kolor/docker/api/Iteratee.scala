@@ -49,7 +49,7 @@ object DockerEnumeratee {
 	    	  	  Right(msg)
 	    	  	case msg if msg.isError => 
 	    	  	  log.debug("statusStreamEnumeratee mapped errorMsg: " + msg.error.get)
-	    	  	  Left(msg.error.get)
+	    	  	  Left[DockerErrorInfo,DockerStatusMessage](msg.error.get)
 	    	  	case msg => 
 	    	  	  log.debug("statusStreamEnumeratee mapped statusMsg: " + msg)
 	    	  	  Right(msg)

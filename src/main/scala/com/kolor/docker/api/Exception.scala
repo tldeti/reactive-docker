@@ -47,17 +47,17 @@ trait DockerApiException extends DockerException {
 
 case class InvalidContainerIdFormatException(message: String, id: String, cause: Option[Throwable] = None) extends DockerException {
 	cause.map(initCause(_))
-    def this(message: String) = this(message, null)
+    def this(message: String) = this(message, "")
 }
 
 case class InvalidImageIdFormatException(message: String, id: String, cause: Option[Throwable] = None) extends DockerException {
 	cause.map(initCause(_))
-    def this(message: String) = this(message, null)
+    def this(message: String) = this(message, "")
 }
 
 case class InvalidRepositoryTagFormatException(message: String, tag: String, cause: Option[Throwable] = None) extends DockerException {
 	cause.map(initCause(_))
-    def this(message: String) = this(message, null)
+    def this(message: String) = this(message, "")
 }
 
 case class DockerRequestException(message: String, client: DockerClient, cause: Option[Throwable] = None, request: Option[dispatch.Req]) extends DockerApiException {

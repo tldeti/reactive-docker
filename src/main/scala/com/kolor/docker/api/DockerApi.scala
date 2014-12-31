@@ -584,7 +584,7 @@ trait DockerContainerApi extends DockerApiHelper {
       case DockerResponseCode(404, err)      => Future.failed(new NoSuchContainerException(id, docker))
       case DockerResponseCode(500, err)      => Future.failed(new DockerInternalServerErrorException(docker, err))
       case t @ DockerResponseCode(code, err) => Future.failed(new DockerRequestException(s"Docker streaming attach to container $id failed (Code: $code): err", docker, Some(t), None))
-    }.flatMap(_.run).map(_ => Unit)
+    }.flatMap(_.run).map(_ => ())
   }
 
   /**

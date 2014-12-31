@@ -22,6 +22,9 @@ publishTo <<= version { (v: String) =>
     Some("releases"  at nexus + "service/local/staging/deploy/maven2")
 }
 
+
+//wartremoverErrors ++= Warts.allBut(Wart.DefaultArguments)
+
 parallelExecution in Test := false
 
 publishArtifact in Test := false
@@ -48,8 +51,20 @@ pomExtra := (
       <url>http://github.com/almoehi/</url>
     </developer>
   </developers>)
-
-scalacOptions ++= Seq("-deprecation","-language:_")
+scalacOptions ++= Seq("-encoding", "UTF-8",
+  "-deprecation",
+  "-feature",
+  "-language:postfixOps,higherKinds,existentials",
+  "-unchecked",
+  "-Xcheckinit",
+//  "-Xfatal-warnings",
+  "-Xlint",
+  "-Ywarn-adapted-args",
+  "-Ywarn-dead-code",
+  "-Ywarn-inaccessible",
+  "-Ywarn-value-discard",
+  "-Ywarn-infer-any"
+)
 
 // scalacOptions in (Compile, console) += "-Xlog-implicits"
 
@@ -62,7 +77,7 @@ libraryDependencies ++= Seq(
             //"org.scalaz.stream" %% "scalaz-stream" % "0.3.1",
             "com.netaporter" %% "scala-uri" % "0.4.4",
             "com.typesafe.play" %% "play-json" % "2.3.7",
-            "com.typesafe.play" %% "play-iteratees" % "2.3.4",
+            "com.typesafe.play" %% "play-iteratees" % "2.3.7",
             // "com.typesafe.akka" %% "akka-actor" % "2.4-SNAPSHOT",
             "net.databinder.dispatch" %% "dispatch-core" % "0.11.2",
             "org.specs2" %% "specs2" % "2.4.15" % "test",

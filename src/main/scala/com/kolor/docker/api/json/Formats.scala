@@ -2,11 +2,12 @@ package com.kolor.docker.api.json
 
 import com.kolor.docker.api.entities._
 import org.joda.time.DateTime
+import org.joda.time.format.ISODateTimeFormat
 import play.api.data.validation.ValidationError
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 // docker remote api is not very strict.sometimes a jsarray location only have a element T,it
 // become a T,not Seq[T]. sometime when no element, it become a null ,not no this field.
@@ -20,10 +21,10 @@ class ISODateTimeString(string: String) {
   }
 }
 
-trait PartialFormat[T <: DockerEntity] extends Format[T] {
+trait PartialFormat[T ] extends Format[T] {
   def partialReads: PartialFunction[JsValue, JsResult[T]]
 
-  def partialWrites: PartialFunction[DockerEntity, JsValue]
+  def partialWrites: T => JsValue
 
   def writes(t: T): JsValue = partialWrites(t)
 
@@ -32,12 +33,27 @@ trait PartialFormat[T <: DockerEntity] extends Format[T] {
 
 
 object Formats {
-  implicit def String2ISODateTime(s: String): ISODateTimeString = new ISODateTimeString(s)
+//  implicit def String2ISODateTime(s: String): ISODateTimeString = new ISODateTimeString(s)
 
-  implicit def int2Boolean(i: Int): Boolean = i match {
+  def int2Boolean(i: Int): Boolean = i match {
     case 0 => false
     case _ => true
   }
+
+  def isoDateTimeFrom(str:String):Try[DateTime] =
+    Try(DateTime.parse(str))
+
+  def tryToJsResult[T](ty:Try[T]) =
+    ty match {
+      case Success(t) => JsSuccess(t)
+      case Failure(x) => JsError(x.getMessage)
+    }
+
+  def toJsResultWithMsg[T](ty:Try[T],message:String) =
+    ty match {
+      case Success(t) => JsSuccess(t)
+      case Failure(x) => JsError(message + ";" +x.getMessage)
+    }
 
   implicit object ContainerIdFormat extends PartialFormat[ContainerId] {
     def partialReads: PartialFunction[JsValue, JsResult[ContainerId]] = {
@@ -65,6 +81,15 @@ object Formats {
     val partialWrites: PartialFunction[DockerEntity, JsValue] = {
       case mode: ContainerNetworkingMode => JsString(mode.name)
     }
+  }
+
+  object IsoDateTimeStringFormat extends PartialFormat[DateTime]{
+    def partialReads = {
+      case JsString(s) => toJsResultWithMsg(isoDateTimeFrom(s), "not valid iso str")
+    }
+
+    override def partialWrites = (t:DateTime) =>
+      JsString(t.toString)
   }
 
   implicit object ImageIdFormat extends PartialFormat[ImageId] {
@@ -330,12 +355,8 @@ import scalaz._
       (__ \ "Running").read[Boolean] and
         (__ \ "Pid").read[Int] and
         (__ \ "ExitCode").read[Int] and
-        (__ \ "StartedAt").readNullable[String].map { opt =>
-          opt.map(_.isoDateTime)
-        } and
-        (__ \ "FinishedAt").readNullable[String].map { opt =>
-          opt.map(_.isoDateTime)
-        } and
+        (__ \ "StartedAt").readNullable[DateTime](IsoDateTimeStringFormat) and
+        (__ \ "FinishedAt").readNullable[DateTime](IsoDateTimeStringFormat) and
         (__ \ "Ghost").read[Boolean].orElse(Reads.pure(false)))(ContainerState.apply _),
     (
       (__ \ "Running").write[Boolean] and
@@ -473,7 +494,7 @@ import scalaz._
         (__ \ "State").read[ContainerState] and
         (__ \ "NetworkSettings").read[ContainerNetworkConfiguration] and
         (__ \ "HostConfig").read[ContainerHostConfiguration] and
-        (__ \ "Created").read[String].map(_.isoDateTime) and
+        (__ \ "Created").read[DateTime](IsoDateTimeStringFormat) and
         (__ \ "Name").readNullable[String].map(o => o.map(_.stripPrefix("/"))) and
         (__ \ "Path").readNullable[String] and
         (__ \ "Args").readNullable[Seq[String]] and
@@ -535,7 +556,7 @@ import scalaz._
     (
       (__ \ "id").read[ImageId](ImageIdFormat) and
         (__ \ "parent").readNullable[ImageId](ImageIdFormat) and
-        (__ \ "created").read[String].map(_.isoDateTime) and
+        (__ \ "created").read[DateTime](IsoDateTimeStringFormat) and
         (__ \ "container").readNullable[ContainerId](ContainerIdFormat) and
         (__ \ "container_config").readNullable[ContainerConfiguration] and
         (__ \ "docker_version").readNullable[String] and

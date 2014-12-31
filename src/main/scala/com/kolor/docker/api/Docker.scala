@@ -165,10 +165,12 @@ sealed trait DockerClient extends DockerApi {
     	  override def onCompleted() = {
     		  log.info(s"${req.url} completed")
     		  Option(iteratee).map(iterateeP.success)
+          ()
     	  }
 
     	  override def onThrowable(t: Throwable) = {
     		  iterateeP.failure(t)
+          ()
     	  }
     }
        

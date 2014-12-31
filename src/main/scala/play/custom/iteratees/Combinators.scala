@@ -41,7 +41,7 @@ object Combinators {
   def expect(value: Char) = for {
     ch <- peekOne
     result <- ch match {
-      case Some(c) if c == value => done(Unit)
+      case Some(c) if c == value => done(())
       case Some(c) => error("Expected '" + value + "' but got '"+ c +"' / chr(" + c.toInt + ")")
       case None => error("Premature end of input, expected '" + value + "'")
     }
@@ -50,14 +50,14 @@ object Combinators {
 
 
   def drop(n: Int): Iteratee[Array[Char], Unit] = Cont {
-    case EOF => Done(Unit, EOF)
+    case EOF => Done((), EOF)
     case Empty => drop(n)
     case El(data) => {
       val remaining = n - data.length
       if (remaining == 0) {
-        Done(Unit, Empty)
+        Done((), Empty)
       } else if (remaining < 0) {
-        Done(Unit, El(data.drop(n)))
+        Done((), El(data.drop(n)))
       } else {
         drop(remaining)
       }
@@ -75,14 +75,14 @@ object Combinators {
   } yield result
 
   def dropWhile(p: Char => Boolean): Iteratee[Array[Char], Unit] = Cont {
-    case EOF => Done(Unit, EOF)
+    case EOF => Done((), EOF)
     case Empty => dropWhile(p)
     case El(data) => {
       val dropped = data.dropWhile(p)
       if (dropped.length == 0) {
         dropWhile(p)
       } else {
-        Done(Unit, El(dropped))
+        Done((), El(dropped))
       }
     }
   }
