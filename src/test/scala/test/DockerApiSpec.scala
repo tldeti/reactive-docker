@@ -76,6 +76,7 @@ class DockerApiSpec extends Specification {
       } finally {
         try {
           await(docker.imageRemove("busybox"))
+          ()
         } catch {
           case t: Throwable => // ignore
         }
@@ -120,6 +121,7 @@ class DockerApiSpec extends Specification {
 
       } finally {
         docker.imageRemove("busybox")
+        ()
       }
     }
     
@@ -161,6 +163,7 @@ class DockerApiSpec extends Specification {
         res must be_==(true)
       } finally {
         await(docker.imageRemove("dockerspec"))
+        ()
       }
     }
     
@@ -172,6 +175,7 @@ class DockerApiSpec extends Specification {
       } finally {
         try {
           await(docker.imageRemove("busybox"))
+          ()
         } catch {
           case t:Throwable => // ignore
         }
@@ -269,6 +273,7 @@ class DockerApiSpec extends Specification {
       } finally {
 	      await(docker.containerStop(id))
 	      await(docker.containerRemove(id, true))
+        ()
       }
     }
     

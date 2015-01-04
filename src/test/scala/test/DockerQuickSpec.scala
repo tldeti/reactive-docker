@@ -91,6 +91,7 @@ class DockerQuickSpec extends Specification {
 
       } finally {
         docker.imageRemove("busybox")
+        ()
       } 
     }
     
@@ -148,6 +149,7 @@ class DockerQuickSpec extends Specification {
       } finally {
         try {
           await(docker.imageRemove("busybox"))
+          ()
         } catch {
           case t: Throwable => // ignore
         }

@@ -78,11 +78,13 @@ class DockerBuildSpec extends Specification {
       val dockerfile = Dockerfile from "ubuntu" by "me <me@somehost.de>" expose (80, 8080) starting withArgs("ls", "-lah", "/opt/src") add "src/" -> "/opt/src"
       val res = await(docker.dockerfileBuild(dockerfile, "dsl-container"))
       //println(res)
-      val last = res.last
-      
-      last should beRight{msg:DockerStatusMessage => 
+      val last = res.lastOption
+
+      last.map( l =>
+        l should beRight { msg: DockerStatusMessage =>
           msg.error should beNone
-      }
+        }
+      )
     }
     
     
@@ -95,11 +97,12 @@ class DockerBuildSpec extends Specification {
       val res = await(docker.dockerfileBuild(dockerfile, "dsl-container"))
       //println(res)
       
-      val last = res.last
+      val last = res.lastOption
       
-      last should beLeft{msg:DockerErrorInfo => 
+      last.map( l=> beLeft{msg:DockerErrorInfo =>
           msg.message should not beEmpty
       }
+      )
     }
   }
 }

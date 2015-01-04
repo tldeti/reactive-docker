@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory
 import play.api.libs.iteratee.Iteratee
 import scala.concurrent.ExecutionContext.Implicits.global
 
-package object test {
+object Test {
   
   private val log = LoggerFactory.getLogger(getClass())
   implicit val auth = DockerAnonymousAuth
@@ -31,7 +31,7 @@ package object test {
 	  implicit val docker = Docker("localhost", 2375)
 	  implicit val timeout = Duration.create(60, SECONDS)
   }
-	
+
 	
 	/**
 	 * provides a spec2 Around context with a basic busybox image
@@ -83,6 +83,7 @@ package object test {
 	      try {
 	    	  Await.result(docker.containerStop(env.containerId, 10), timeout)
 		      Await.result(docker.containerRemove(env.containerId, true), timeout)
+					()
 		      //Await.result(docker.imageRemove("busybox"), timeout)
 	      } catch {
 	        case t:Throwable => // ignore
@@ -124,6 +125,7 @@ package object test {
         try {
           Await.result(docker.containerStop(env.containerId, 10), timeout)
           Await.result(docker.containerRemove(env.containerId, true), timeout)
+					()
           // Await.result(docker.imageRemove("busybox"), timeout)
         } catch {
           case t:Throwable => // ignore
@@ -170,6 +172,7 @@ package object test {
 	      try {
 	    	  Await.result(docker.containerStop(env.containerId, 10), timeout)
 		      Await.result(docker.containerRemove(env.containerId, true), timeout)
+					()
 		      //Await.result(docker.imageRemove("busybox"), timeout)
 	      } catch {
 	        case t:Throwable => // ignore
@@ -216,6 +219,7 @@ package object test {
 	      try {
 	    	  Await.result(docker.containerStop(env.containerId, 10), timeout)
 		      Await.result(docker.containerRemove(env.containerId, true), timeout)
+					()
 		      //Await.result(docker.imageRemove("busybox"), timeout)
 	      } catch {
 	        case t:Throwable => // ignore
