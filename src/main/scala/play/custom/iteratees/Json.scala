@@ -338,7 +338,7 @@ import Combinators._
     // and possibly an error message.  Because this is a mutable structure with the StringBuilders, we, for
     // the normal case of growing the result or remaining buffers, do not need to create a new state, but can
     // just append to the buffers.
-    case class State(result: StringBuilder,
+  final case class State(result: StringBuilder,
                      remaining: Option[StringBuilder],
                      escaped: Option[StringBuilder],
                      error: Option[String])

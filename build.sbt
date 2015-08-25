@@ -51,6 +51,7 @@ pomExtra := (
       <url>http://github.com/almoehi/</url>
     </developer>
   </developers>)
+
 scalacOptions ++= Seq("-encoding", "UTF-8",
   "-deprecation",
   "-feature",
@@ -71,7 +72,8 @@ scalacOptions ++= Seq("-encoding", "UTF-8",
 
   javacOptions ++= Seq("-target", "1.6", "-source","1.6")
 
-val logbackVer = "1.1.2"
+val logbackVer = "1.1.3"
+val akkaVer = "2.3.9"
 
 libraryDependencies ++= Seq(
             //"org.scalaz.stream" %% "scalaz-stream" % "0.3.1",

@@ -21,11 +21,11 @@ object Test {
 	  implicit val timeout = Duration.create(60, SECONDS)
   }
   
-  case class Image(imageCmd: Seq[String], imageTag: IndexRepoTagLocation) {
+final case class Image(imageCmd: Seq[String], imageTag: IndexRepoTagLocation) {
 	  def imageName = imageTag.repoLocation.noTagImage
   }
 	
-  case class Container(containerId: ContainerId, containerName: String, image: IndexRepoLocation, imageCmd: Seq[String])
+final case class Container(containerId: ContainerId, containerName: String, image: IndexRepoLocation, imageCmd: Seq[String])
 	
   trait DockerEnv[T] extends AroundOutside[T] {
 	  implicit val docker = Docker("localhost", 2375)

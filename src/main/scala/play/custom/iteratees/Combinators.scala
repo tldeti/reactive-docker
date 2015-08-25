@@ -129,7 +129,7 @@ object Combinators {
      * @param lines How many lines have we seen?
      * @param data What was the last piece of data that we saw?
      */
-    case class State(chunks: Int = 0,
+  case class State(chunks: Int = 0,
                      chars: Int = 0,
                      lines: Int = 1,
                      data: Array[Char] = Array[Char]())

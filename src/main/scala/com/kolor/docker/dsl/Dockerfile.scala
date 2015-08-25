@@ -334,15 +334,15 @@ case object Dockerfile {
 
 object DockerfileDSL {
   
-  case class from(repo: String, tag: Option[String] = None) extends Command(s"$repo:${tag.getOrElse("latest")}") {
+final case class from(repo: String, tag: Option[String] = None) extends Command(s"$repo:${tag.getOrElse("latest")}") {
     override val cmd = "FROM"
   }
   
-  case class maintainer(name: String) extends Command(name) {
+final case class maintainer(name: String) extends Command(name) {
     override val cmd = "MAINTAINER"
   }
   
-  case class run(cmds: String*) extends Command(cmds:_*) {
+final case class run(cmds: String*) extends Command(cmds:_*) {
     override val cmd = "RUN"
     override val asArray = cmds match {
       case Nil => false
@@ -351,50 +351,50 @@ object DockerfileDSL {
     }
   }
   
-  case class expose(cmds: String*) extends Command(cmds:_*) {
+final case class expose(cmds: String*) extends Command(cmds:_*) {
     override val cmd = "EXPOSE"
   }
   
-  case class volume(cmds: String*) extends Command(cmds:_*) {
+final case class volume(cmds: String*) extends Command(cmds:_*) {
     override val cmd = "VOLUME"
   }
   
-  case class user(cmds: String*) extends Command(cmds.headOption.getOrElse("")) {
+final case class user(cmds: String*) extends Command(cmds.headOption.getOrElse("")) {
     override val cmd = "USER"
   }
   
-  case class workdir(cmds: String*) extends Command(cmds.headOption.getOrElse("")) {
+final case class workdir(cmds: String*) extends Command(cmds.headOption.getOrElse("")) {
     override val cmd = "WORKDIR"
   }
   
-  case class add(src: String, dest: String) extends CommandBinary(src, dest) {
+final case class add(src: String, dest: String) extends CommandBinary(src, dest) {
     override val cmd = "ADD"
   }
   
-  case class copy(src: String, dest: String) extends CommandBinary(src, dest) {
+final case class copy(src: String, dest: String) extends CommandBinary(src, dest) {
     override val cmd = "COPY"
   }
   
-  case class env(env: String, value: String) extends CommandBinary(env, value) {
+final case class env(env: String, value: String) extends CommandBinary(env, value) {
     override val cmd = "ENV"
   }
   
-  case class cmd(params: String*) extends Command(params:_*) {
+final case class cmd(params: String*) extends Command(params:_*) {
     override val cmd = "CMD"
     override val asArray = true
   }
   
-  case class cmdShell(params: String*) extends Command(params:_*) {
+final case class cmdShell(params: String*) extends Command(params:_*) {
     override val cmd = "CMD"
     override val asArray = false
   }
   
-  case class entrypoint(params: String*) extends Command(params:_*) {
+final case class entrypoint(params: String*) extends Command(params:_*) {
     override val cmd = "ENTRYPOINT"
     override val asArray = true
   }
   
-  case class entrypointShell(params: String*) extends Command(params:_*) {
+final case class entrypointShell(params: String*) extends Command(params:_*) {
     override val cmd = "ENTRYPOINT"
     override val asArray = false
   }

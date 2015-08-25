@@ -10,9 +10,9 @@ case class DockerErrorInfo(code: Option[Int] = None, message: Option[String] = N
     def isEmpty = code.isEmpty && message.isEmpty
   }
 
-  case class DockerProgressInfo(current: Int, total: Int, start: Option[DateTime] = None) extends DockerEntity
+final case class DockerProgressInfo(current: Int, total: Int, start: Option[DateTime] = None) extends DockerEntity
 
-  case class DockerStatusMessage(
+final case class DockerStatusMessage(
     id: Option[String] = None,
     stream: Option[String] = None,
     status: Option[String] = None,
@@ -25,7 +25,7 @@ case class DockerErrorInfo(code: Option[Int] = None, message: Option[String] = N
     def isError = error.map(e => e.code.nonEmpty || e.message.nonEmpty).getOrElse(false)
   }
 
-  case class Container(
+final case class Container(
     id: ContainerId,
     image: IndexRepoLocation,
     names: Option[Seq[String]],
@@ -36,7 +36,7 @@ case class DockerErrorInfo(code: Option[Int] = None, message: Option[String] = N
     sizeRw: Option[Long],
     sizeRootFs: Option[Long]) extends DockerEntity
 
-  case class ContainerState(
+final case class ContainerState(
     running: Boolean = false,
     pid: Int = 0,
     exitCode: Int = 0,
@@ -44,7 +44,7 @@ case class DockerErrorInfo(code: Option[Int] = None, message: Option[String] = N
     finishedAt: Option[org.joda.time.DateTime] = None,
     ghost: Boolean = false) extends DockerEntity
 
-  case class ContainerNetworkConfiguration(
+final case class ContainerNetworkConfiguration(
     ipAddress: Option[String],
     ipPrefixLen: Option[Int],
     gateway: Option[String],
@@ -52,17 +52,17 @@ case class DockerErrorInfo(code: Option[Int] = None, message: Option[String] = N
     portMapping: Option[Seq[String]] = None,
     ports: Option[Seq[DockerPortBinding]] = None) extends DockerEntity
 
-  case class DockerHostIpPort(hostIp:String,hostPort:String)
+final case class DockerHostIpPort(hostIp:String,hostPort:String)
 
 
-  case class DockerPortBinding(privatePort: Int,  protocol: Option[String] = None, hosts:Seq[DockerHostIpPort]) extends DockerEntity
+final case class DockerPortBinding(privatePort: Int,  protocol: Option[String] = None, hosts:Seq[DockerHostIpPort]) extends DockerEntity
 
   /*
    * not the same as DockerPortBinding,ExposedPorts is used by  container linking.
    * may be multiple ExposedPorts
    * "ExposedPorts": { "<port>/<tcp|udp>: {}" }
    */
-  case class ExposedPorts(privatePort: Int, protocol: Option[String] = None){
+final case class ExposedPorts(privatePort: Int, protocol: Option[String] = None){
     override def toString =
       s"$privatePort${protocol.fold("")("/"+_)}:{}"
   }
@@ -74,18 +74,18 @@ case class DockerErrorInfo(code: Option[Int] = None, message: Option[String] = N
     case object Bridge extends ContainerNetworkingMode { val name = "bridge" }
     case object Host extends ContainerNetworkingMode { val name = "host" }
     case object None extends ContainerNetworkingMode { val name = "none" }
-    case class Container(name: String) extends ContainerNetworkingMode {
+  final case class Container(name: String) extends ContainerNetworkingMode {
       def container = "" // TODO: extract container from string: container:<containerIdOrName>
     }
   }
 
-  case class ContainerRestartPolicy(
+final case class ContainerRestartPolicy(
     name: String,
     maximumRetryCount: Int) extends DockerEntity
 
 
   // no Devices field
-  case class ContainerHostConfiguration(
+final case class ContainerHostConfiguration(
     privileged: Boolean = false,
     publishAllPorts: Boolean = false,
     binds: Option[Seq[VolumeBind]] = None,
@@ -102,7 +102,7 @@ case class DockerErrorInfo(code: Option[Int] = None, message: Option[String] = N
     dnsSearch: Option[Seq[String]] = None
     ) extends DockerEntity
 
-  case class ContainerInfo(
+final case class ContainerInfo(
     id: ContainerId,
     image: String,
     config: ContainerConfiguration,
@@ -120,16 +120,16 @@ case class DockerErrorInfo(code: Option[Int] = None, message: Option[String] = N
     volumes: Option[Seq[ContainerVolume]] = None,
     volumesRW: Option[Map[String, Boolean]] = None) extends DockerEntity
 
-  case class ContainerChangelogRecord(
+final case class ContainerChangelogRecord(
     path: String,
     kind: Int) extends DockerEntity
 
-  case class DockerRawStreamChunk(channel: Int, size: Int, data: Array[Byte]) extends DockerEntity {
+final case class DockerRawStreamChunk(channel: Int, size: Int, data: Array[Byte]) extends DockerEntity {
     def text = (new String(data, "utf-8")).trim
     override def toString = s"RawStreamChunk [$channel] '$text'"
   }
 
-  case class DockerImage(
+final case class DockerImage(
     id: String,
     parentId: Option[String],
     repoTags: Option[Seq[IndexRepoLocation]],
@@ -137,7 +137,7 @@ case class DockerErrorInfo(code: Option[Int] = None, message: Option[String] = N
     size: Long,
     virtualSize: Long) extends DockerEntity
 
-  case class DockerImageInfo(
+final case class DockerImageInfo(
     id: ImageId,
     parent: Option[ImageId] = None,
     created: DateTime,
@@ -150,21 +150,21 @@ case class DockerErrorInfo(code: Option[Int] = None, message: Option[String] = N
     size: Option[Long],
     comment: String) extends DockerEntity
 
-  case class DockerImageHistoryInfo(
+final case class DockerImageHistoryInfo(
     id: ImageId,
     created: DateTime,
     createdBy: String,
     tags: Option[Seq[String]],
     size: Option[Long])
 
-  case class DockerImageSearchResult(
+final case class DockerImageSearchResult(
     name: String,
     description: Option[String],
     isOfficial: Boolean = false,
     isTrusted: Boolean = false,
     starCount: Int = 0)
 
-  case class DockerInfo(
+final case class DockerInfo(
     containers: Int,
     debug: Boolean,
     driver: String,
@@ -184,4 +184,4 @@ case class DockerErrorInfo(code: Option[Int] = None, message: Option[String] = N
     sockets: Seq[String] = Seq.empty // new with 1.13 - TODO: check exact format
     )
 
-  case class DockerVersion(version: String, gitCommit: Option[String], goVersion: Option[String], arch: Option[String], kernelVersion: Option[String], os: Option[String], apiVersion: Option[String])
+final case class DockerVersion(version: String, gitCommit: Option[String], goVersion: Option[String], arch: Option[String], kernelVersion: Option[String], os: Option[String], apiVersion: Option[String])
